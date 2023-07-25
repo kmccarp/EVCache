@@ -50,7 +50,7 @@ public class HotKeyListener implements EVCacheEventListener {
     private static final Logger log = LoggerFactory.getLogger(HotKeyListener.class);
     private final Map<String, Property<Boolean>> throttleMap;
     private final Map<String, Cache<String, Integer>> cacheMap;
-    private final Integer START_VAL = Integer.valueOf(1);
+    private final Integer startVal = Integer.valueOf(1);
     private final Property<Boolean> enableThrottleHotKeys;
     private final EVCacheClientPoolManager poolManager;
     private final Map<String, Property<Set<String>>> throttleKeysMap;
@@ -58,13 +58,15 @@ public class HotKeyListener implements EVCacheEventListener {
     @Inject
     public HotKeyListener(EVCacheClientPoolManager poolManager) {
         this.poolManager = poolManager;
-        this.throttleKeysMap = new ConcurrentHashMap<String, Property<Set<String>>>();
+        this.throttleKeysMap = new ConcurrentHashMap<>();
 
-        this.throttleMap = new ConcurrentHashMap<String, Property<Boolean>>();
-        cacheMap = new ConcurrentHashMap<String, Cache<String, Integer>>();
+        this.throttleMap = new ConcurrentHashMap<>();
+        cacheMap = new ConcurrentHashMap<>();
         enableThrottleHotKeys = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler.throttle.hot.keys", Boolean.class).orElse(false);
-        enableThrottleHotKeys.subscribe((i) -> setupHotKeyListener());
-        if(enableThrottleHotKeys.get()) setupHotKeyListener();
+        enableThrottleHotKeys.subscribe(i -> setupHotKeyListener());
+      if (enableThrottleHotKeys.get()) {
+        setupHotKeyListener();
+      }
     }
 
     private void setupHotKeyListener() {
@@ -85,14 +87,18 @@ public class HotKeyListener implements EVCacheEventListener {
         	throttleFlag = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler." + appName + ".throttle.hot.keys", Boolean.class).orElse(false);
             throttleMap.put(appName, throttleFlag);
         }
-        if(log.isDebugEnabled()) log.debug("Throttle hot keys : " + throttleFlag);
+      if (log.isDebugEnabled()) {
+        log.debug("Throttle hot keys : " + throttleFlag);
+      }
 
         if(!throttleFlag.get()) {
             return null;
         }
 
         Cache<String, Integer> cache = cacheMap.get(appName);
-        if(cache != null) return cache;
+      if (cache != null) {
+        return cache;
+      }
 
         final Property<Integer> _cacheDuration = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler." + appName + ".inmemory.expire.after.write.duration.ms", Integer.class).orElse(10000);
         final Property<Integer> _exireAfterAccessDuration = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler." + appName + ".inmemory.expire.after.access.duration.ms", Integer.class).orElse(10000);
@@ -113,15 +119,19 @@ public class HotKeyListener implements EVCacheEventListener {
     }
 
     public void onStart(final EVCacheEvent e) {
-        if(!enableThrottleHotKeys.get()) return;
+      if (!enableThrottleHotKeys.get()) {
+        return;
+      }
 
         final Cache<String, Integer> cache = getCache(e.getAppName());
-        if(cache == null) return;
+      if (cache == null) {
+        return;
+      }
         for(EVCacheKey evcKey : e.getEVCacheKeys()) {
             final String key = evcKey.getKey();
             Integer val = cache.getIfPresent(key);
             if(val == null) {
-                cache.put(key, START_VAL);
+                cache.put(key, startVal);
             } else {
                 cache.put(key, Integer.valueOf(val.intValue() + 1));
             }
@@ -130,31 +140,41 @@ public class HotKeyListener implements EVCacheEventListener {
 
     @Override
     public boolean onThrottle(final EVCacheEvent e) {
-        if(!enableThrottleHotKeys.get()) return false;
+      if (!enableThrottleHotKeys.get()) {
+        return false;
+      }
 
         final String appName = e.getAppName();
         Property<Set<String>> throttleKeysSet = throttleKeysMap.get(appName).orElse(Collections.emptySet());
 
-        if(throttleKeysSet.get().size() > 0) {
-            if(log.isDebugEnabled()) log.debug("Throttle : " + throttleKeysSet);
+        if(!throttleKeysSet.get().isEmpty()) {
+          if (log.isDebugEnabled()) {
+            log.debug("Throttle : " + throttleKeysSet);
+          }
             for(EVCacheKey evcKey : e.getEVCacheKeys()) {
                 final String key = evcKey.getKey();
                 if(throttleKeysSet.get().contains(key)) {
-                    if(log.isDebugEnabled()) log.debug("Key : " + key + " is throttled");
+                  if (log.isDebugEnabled()) {
+                    log.debug("Key : " + key + " is throttled");
+                  }
                     return true;
                 }
             }
         }
 
         final Cache<String, Integer> cache = getCache(appName);
-        if(cache == null) return false;
+      if (cache == null) {
+        return false;
+      }
 
         final Property<Integer> _throttleVal = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler." + appName + ".throttle.value", Integer.class).orElse(3);
         for(EVCacheKey evcKey : e.getEVCacheKeys()) {
             final String key = evcKey.getKey();
             Integer val = cache.getIfPresent(key);
             if(val.intValue() > _throttleVal.get()) {
-                if(log.isDebugEnabled()) log.debug("Key : " + key + " has exceeded " + _throttleVal.get() + ". Will throttle this request");
+              if (log.isDebugEnabled()) {
+                log.debug("Key : " + key + " has exceeded " + _throttleVal.get() + ". Will throttle this request");
+              }
                 return true;
             }
         }
@@ -162,10 +182,14 @@ public class HotKeyListener implements EVCacheEventListener {
     }
 
     public void onComplete(EVCacheEvent e) {
-        if(!enableThrottleHotKeys.get()) return;
+      if (!enableThrottleHotKeys.get()) {
+        return;
+      }
         final String appName = e.getAppName();
         final Cache<String, Integer> cache = getCache(appName);
-        if(cache == null) return;
+      if (cache == null) {
+        return;
+      }
 
         for(EVCacheKey evcKey : e.getEVCacheKeys()) {
             final String key = evcKey.getKey();
@@ -177,10 +201,14 @@ public class HotKeyListener implements EVCacheEventListener {
     }
 
     public void onError(EVCacheEvent e, Throwable t) {
-        if(!enableThrottleHotKeys.get()) return;
+      if (!enableThrottleHotKeys.get()) {
+        return;
+      }
         final String appName = e.getAppName();
         final Cache<String, Integer> cache = getCache(appName);
-        if(cache == null) return;
+      if (cache == null) {
+        return;
+      }
 
         for(EVCacheKey evcKey : e.getEVCacheKeys()) {
             final String key = evcKey.getKey();
@@ -202,23 +230,30 @@ public class HotKeyListener implements EVCacheEventListener {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
         HotKeyListener other = (HotKeyListener) obj;
         if (cacheMap == null) {
-            if (other.cacheMap != null)
-                return false;
-        } else if (!cacheMap.equals(other.cacheMap))
+          if (other.cacheMap != null) {
             return false;
+          }
+        } else if (!cacheMap.equals(other.cacheMap)) {
+          return false;
+        }
         if (throttleMap == null) {
-            if (other.throttleMap != null)
-                return false;
-        } else if (!throttleMap.equals(other.throttleMap))
+          if (other.throttleMap != null) {
             return false;
+          }
+        } else if (!throttleMap.equals(other.throttleMap)) {
+          return false;
+        }
         return true;
     }
 }

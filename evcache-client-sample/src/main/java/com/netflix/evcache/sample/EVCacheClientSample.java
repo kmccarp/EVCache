@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 public class EVCacheClientSample {
 
     private final EVCache evCache;
-    private static boolean verboseMode = false;
+    private static boolean verboseMode;
 
     /**
      * Default constructor.
@@ -71,11 +71,11 @@ public class EVCacheClientSample {
 
     public void setKey(String key, String value, int timeToLive) throws Exception {
         try {
-            Future<Boolean>[] _future = evCache.set(key, value, timeToLive);
+            Future<Boolean>[] future = evCache.set(key, value, timeToLive);
 
             // Wait for all the Futures to complete.
             // In "verbose" mode, show the status for each.
-            for (Future<Boolean> f : _future) {
+            for (Future<Boolean> f : future) {
             	boolean didSucceed = f.get();
             	if (verboseMode) {
                     System.out.println("per-shard set success code for key " + key + " is " + didSucceed);
@@ -97,8 +97,7 @@ public class EVCacheClientSample {
 
     public String getKey(String key) {
         try {
-            String _response = evCache.<String>get(key);
-            return _response;
+            return evCache.<String>get(key);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -111,7 +110,7 @@ public class EVCacheClientSample {
 
     public static void main(String[] args) {
         // set verboseMode based on the environment variable
-        verboseMode = ("true".equals(System.getenv("EVCACHE_SAMPLE_VERBOSE")));
+        verboseMode = "true".equals(System.getenv("EVCACHE_SAMPLE_VERBOSE"));
 
         if (verboseMode) {
             System.out.println("To run this sample app without using Gradle:");

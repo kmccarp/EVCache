@@ -129,14 +129,14 @@ public class EVCacheNodeLocator implements NodeLocator {
     }
 
     public Iterator<MemcachedNode> getSequence(String k) {
-        final List<MemcachedNode> allKetamaNodes = new ArrayList<MemcachedNode>(getKetamaNodes().values());
+        final List<MemcachedNode> allKetamaNodes = new ArrayList<>(getKetamaNodes().values());
         Collections.shuffle(allKetamaNodes);
         return allKetamaNodes.iterator();
     }
 
     public NodeLocator getReadonlyCopy() {
-        final TreeMap<Long, MemcachedNode> ketamaNaodes = new TreeMap<Long, MemcachedNode>(getKetamaNodes());
-        final Collection<MemcachedNode> aNodes = new ArrayList<MemcachedNode>(allNodes.size());
+        final TreeMap<Long, MemcachedNode> ketamaNaodes = new TreeMap<>(getKetamaNodes());
+        final Collection<MemcachedNode> aNodes = new ArrayList<>(allNodes.size());
 
         // Rewrite the values a copy of the map.
         for (Map.Entry<Long, MemcachedNode> me : ketamaNaodes.entrySet()) {
@@ -162,7 +162,7 @@ public class EVCacheNodeLocator implements NodeLocator {
      *         purposes
      */
     public Map<Long, MemcachedNode> getKetamaNodeMap() {
-        return Collections.<Long, MemcachedNode> unmodifiableMap(ketamaNodes);
+        return Collections. unmodifiableMap(ketamaNodes);
     }
 
     /**
@@ -173,7 +173,7 @@ public class EVCacheNodeLocator implements NodeLocator {
      *            its continuum
      */
     protected final void setKetamaNodes(List<MemcachedNode> nodes) {
-        TreeMap<Long, MemcachedNode> newNodeMap = new TreeMap<Long, MemcachedNode>();
+        TreeMap<Long, MemcachedNode> newNodeMap = new TreeMap<>();
         final int numReps = config.getNodeRepetitions();
         for (MemcachedNode node : nodes) {
             // Ketama does some special work with md5 where it reuses chunks.
@@ -181,14 +181,18 @@ public class EVCacheNodeLocator implements NodeLocator {
                 for (int i = 0; i < numReps / 4; i++) {
                     final String hashString = config.getKeyForNode(node, i);
                     byte[] digest = DefaultHashAlgorithm.computeMd5(hashString);
-                    if (log.isDebugEnabled()) log.debug("digest : " + digest);
+                  if (log.isDebugEnabled()) {
+                    log.debug("digest : " + digest);
+                  }
                     for (int h = 0; h < 4; h++) {
                         long k = ((long) (digest[3 + h * 4] & 0xFF) << 24)
                                 | ((long) (digest[2 + h * 4] & 0xFF) << 16)
                                 | ((long) (digest[1 + h * 4] & 0xFF) << 8)
                                 | (digest[h * 4] & 0xFF);
                         newNodeMap.put(Long.valueOf(k), node);
-                        if (log.isDebugEnabled()) log.debug("Key : " + hashString + " ; hash : " + k + "; node " + node );
+                      if (log.isDebugEnabled()) {
+                        log.debug("Key : " + hashString + " ; hash : " + k + "; node " + node);
+                      }
                     }
                 }
             } else {
@@ -198,7 +202,9 @@ public class EVCacheNodeLocator implements NodeLocator {
                 }
             }
         }
-        if (log.isDebugEnabled()) log.debug("NewNodeMapSize : " + newNodeMap.size() + "; MapSize : " + (numReps * nodes.size()));
+      if (log.isDebugEnabled()) {
+        log.debug("NewNodeMapSize : " + newNodeMap.size() + "; MapSize : " + (numReps * nodes.size()));
+      }
         if (log.isTraceEnabled()) {
             for(Long key : newNodeMap.keySet()) {
                 log.trace("Hash : " + key + "; Node : " + newNodeMap.get(key));

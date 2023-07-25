@@ -35,9 +35,9 @@ public class SimpleEVCacheTest extends Base {
     private static final String APP_NAME = "EVCACHE_TEST";
     private static final String ALIAS_APP_NAME = "EVCACHE";
 
-    private ThreadPoolExecutor pool = null;
+    private ThreadPoolExecutor pool;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         SimpleEVCacheTest test = new SimpleEVCacheTest();
         test.setProps();
         test.setupEnv();
@@ -71,7 +71,7 @@ public class SimpleEVCacheTest extends Base {
         // End alias properties
 
         int maxThreads = 2;
-        final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(100000);
+        final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(100000);
         pool = new ThreadPoolExecutor(maxThreads * 4, maxThreads * 4, 30, TimeUnit.SECONDS, queue);
         pool.prestartAllCoreThreads();
     }
@@ -127,7 +127,9 @@ public class SimpleEVCacheTest extends Base {
     
     public void testGetForKey(String key) throws Exception {
         String value = evCache.<String>get(key);
-        if(log.isDebugEnabled()) log.debug("get : key : " + key + " val = " + value);
+      if (log.isDebugEnabled()) {
+        log.debug("get : key : " + key + " val = " + value);
+      }
     }
 
     
@@ -329,7 +331,9 @@ public class SimpleEVCacheTest extends Base {
         public void run() {
             try {
                 for (Future<Boolean> s : status) {
-                    if (log.isDebugEnabled()) log.debug("SET : key : " + key + "; success = " + s.get());
+                  if (log.isDebugEnabled()) {
+                    log.debug("SET : key : " + key + "; success = " + s.get());
+                  }
                 }
             } catch (Exception e) {
                 log.error(e);

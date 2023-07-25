@@ -65,13 +65,13 @@ public class EVCacheClientPoolManager {
      * <b>NOTE : Should be the only static referenced variables</b> 
      * **/ 
     private static final Logger log = LoggerFactory.getLogger(EVCacheClientPoolManager.class);
-    private volatile static EVCacheClientPoolManager instance;
+    private static volatile EVCacheClientPoolManager instance;
 
     private final Property<Integer> defaultReadTimeout;
     private final Property<String> logEnabledApps;
     private final Property<Integer> defaultRefreshInterval;
-    private final Map<String, EVCacheClientPool> poolMap = new ConcurrentHashMap<String, EVCacheClientPool>();
-    private final Map<EVCacheClientPool, ScheduledFuture<?>> scheduledTaskMap = new HashMap<EVCacheClientPool, ScheduledFuture<?>>();
+    private final Map<String, EVCacheClientPool> poolMap = new ConcurrentHashMap<>();
+    private final Map<EVCacheClientPool, ScheduledFuture<?>> scheduledTaskMap = new HashMap<>();
     private final EVCacheScheduledExecutor asyncExecutor;
     private final EVCacheExecutor syncExecutor;
     private final List<EVCacheEventListener> evcacheEventListenerList;
@@ -86,21 +86,35 @@ public class EVCacheClientPoolManager {
         this.connectionFactoryProvider = connectionFactoryprovider;
         this.evcacheNodeList = evcacheNodeList;
         this.evcConfig = evcConfig;
-        this.evcacheEventListenerList = new CopyOnWriteArrayList<EVCacheEventListener>();
+        this.evcacheEventListenerList = new CopyOnWriteArrayList<>();
 
         String clientCurrentInstanceId = null;
-        if(clientCurrentInstanceId == null) clientCurrentInstanceId= System.getenv("EC2_INSTANCE_ID");
-        if(clientCurrentInstanceId == null) clientCurrentInstanceId= System.getenv("NETFLIX_INSTANCE_ID");
-        if(log.isInfoEnabled()) log.info("\nClient Current InstanceId from env = " + clientCurrentInstanceId);
-        if(clientCurrentInstanceId == null && EVCacheConfig.getInstance().getPropertyRepository() != null) clientCurrentInstanceId = EVCacheConfig.getInstance().getPropertyRepository().get("EC2_INSTANCE_ID", String.class).orElse(null).get();
-        if(clientCurrentInstanceId == null && EVCacheConfig.getInstance().getPropertyRepository() != null) clientCurrentInstanceId = EVCacheConfig.getInstance().getPropertyRepository().get("NETFLIX_INSTANCE_ID", String.class).orElse(null).get();
+      if (clientCurrentInstanceId == null) {
+        clientCurrentInstanceId = System.getenv("EC2_INSTANCE_ID");
+      }
+      if (clientCurrentInstanceId == null) {
+        clientCurrentInstanceId = System.getenv("NETFLIX_INSTANCE_ID");
+      }
+      if (log.isInfoEnabled()) {
+        log.info("\nClient Current InstanceId from env = " + clientCurrentInstanceId);
+      }
+      if (clientCurrentInstanceId == null && EVCacheConfig.getInstance().getPropertyRepository() != null) {
+        clientCurrentInstanceId = EVCacheConfig.getInstance().getPropertyRepository().get("EC2_INSTANCE_ID", String.class).orElse(null).get();
+      }
+      if (clientCurrentInstanceId == null && EVCacheConfig.getInstance().getPropertyRepository() != null) {
+        clientCurrentInstanceId = EVCacheConfig.getInstance().getPropertyRepository().get("NETFLIX_INSTANCE_ID", String.class).orElse(null).get();
+      }
 
-        if(clientCurrentInstanceId != null && !clientCurrentInstanceId.equalsIgnoreCase("localhost")) {
+        if(clientCurrentInstanceId != null && !"localhost".equalsIgnoreCase(clientCurrentInstanceId)) {
             this.defaultReadTimeout = EVCacheConfig.getInstance().getPropertyRepository().get("default.read.timeout", Integer.class).orElse(20);
-            if(log.isInfoEnabled()) log.info("\nClient Current InstanceId = " + clientCurrentInstanceId + " which is probably a cloud location. The default.read.timeout = " + defaultReadTimeout);
+          if (log.isInfoEnabled()) {
+            log.info("\nClient Current InstanceId = " + clientCurrentInstanceId + " which is probably a cloud location. The default.read.timeout = " + defaultReadTimeout);
+          }
         } else { //Assuming this is not in cloud so bump up the timeouts
             this.defaultReadTimeout = EVCacheConfig.getInstance().getPropertyRepository().get("default.read.timeout", Integer.class).orElse(750);
-            if(log.isInfoEnabled()) log.info("\n\nClient Current InstanceId = " + clientCurrentInstanceId + ". Probably a non-cloud instance. The default.read.timeout = " + defaultReadTimeout + "\n\n");
+          if (log.isInfoEnabled()) {
+            log.info("\n\nClient Current InstanceId = " + clientCurrentInstanceId + ". Probably a non-cloud instance. The default.read.timeout = " + defaultReadTimeout + "\n\n");
+          }
         }
         this.logEnabledApps = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheClientPoolManager.log.apps", String.class).orElse("*");
         this.defaultRefreshInterval = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheClientPoolManager.refresh.interval", Integer.class).orElse(60);
@@ -152,8 +166,10 @@ public class EVCacheClientPoolManager {
         if (instance == null) {
             new EVCacheClientPoolManager(new ConnectionFactoryBuilder(), new SimpleNodeListProvider(), EVCacheConfig.getInstance());
             if (!EVCacheConfig.getInstance().getPropertyRepository().get("evcache.use.simple.node.list.provider", Boolean.class).orElse(false).get()) {
-                if(log.isDebugEnabled()) log.debug("Please make sure EVCacheClientPoolManager is injected first. This is not the appropriate way to init EVCacheClientPoolManager."
-                        + " If you are using simple node list provider please set evcache.use.simple.node.list.provider property to true.", new Exception());
+              if (log.isDebugEnabled()) {
+                log.debug("Please make sure EVCacheClientPoolManager is injected first. This is not the appropriate way to init EVCacheClientPoolManager."
+                    + " If you are using simple node list provider please set evcache.use.simple.node.list.provider property to true.", new Exception());
+              }
             }
         }
         return instance;
@@ -165,7 +181,9 @@ public class EVCacheClientPoolManager {
             final StringTokenizer apps = new StringTokenizer(appsToInit, ",");
             while (apps.hasMoreTokens()) {
                 final String app = getAppName(apps.nextToken());
-                if (log.isDebugEnabled()) log.debug("Initializing EVCache - " + app);
+              if (log.isDebugEnabled()) {
+                log.debug("Initializing EVCache - " + app);
+              }
                 initEVCache(app);
             }
         }
@@ -182,9 +200,13 @@ public class EVCacheClientPoolManager {
         return initEVCache(app, false);
     }
     public final synchronized EVCacheClientPool initEVCache(String app, boolean isDuet) {
-        if (app == null || (app = app.trim()).length() == 0) throw new IllegalArgumentException("param app name null or space");
+      if (app == null || (app = app.trim()).length() == 0) {
+        throw new IllegalArgumentException("param app name null or space");
+      }
         final String APP = getAppName(app);
-        if (poolMap.containsKey(APP)) return poolMap.get(APP);
+      if (poolMap.containsKey(APP)) {
+        return poolMap.get(APP);
+      }
         final EVCacheClientPool pool = new EVCacheClientPool(APP, evcacheNodeList, asyncExecutor, this, isDuet);
         scheduleRefresh(pool);
         poolMap.put(APP, pool);
@@ -209,13 +231,15 @@ public class EVCacheClientPoolManager {
     public EVCacheClientPool getEVCacheClientPool(String _app) {
         final String app = getAppName(_app);
         final EVCacheClientPool evcacheClientPool = poolMap.get(app);
-        if (evcacheClientPool != null) return evcacheClientPool;
+      if (evcacheClientPool != null) {
+        return evcacheClientPool;
+      }
         initEVCache(app);
         return poolMap.get(app);
     }
 
     public Map<String, EVCacheClientPool> getAllEVCacheClientPool() {
-        return new HashMap<String, EVCacheClientPool>(poolMap);
+        return new HashMap<>(poolMap);
     }
 
     @PreDestroy
@@ -228,9 +252,10 @@ public class EVCacheClientPoolManager {
     }
 
     public boolean shouldLog(String appName) {
-        if ("*".equals(logEnabledApps.get())) return true;
-        if (logEnabledApps.get().indexOf(appName) != -1) return true;
-        return false;
+      if ("*".equals(logEnabledApps.get())) {
+        return true;
+      }
+      return logEnabledApps.get().indexOf(appName) != -1;
     }
 
     public Property<Integer> getDefaultReadTimeout() {
@@ -259,13 +284,17 @@ public class EVCacheClientPoolManager {
                 EVCacheConfig.getInstance().getPropertyRepository()
                         .get("EVCacheClientPoolManager." + _app + ".alias", String.class)
                         .orElse(_app).get().toUpperCase();
-        if (log.isDebugEnabled()) log.debug("Original App Name : " + _app + "; Alias App Name : " + app);
-        if(app != null && app.length() > 0) return app.toUpperCase();
+      if (log.isDebugEnabled()) {
+        log.debug("Original App Name : " + _app + "; Alias App Name : " + app);
+      }
+      if (app != null && app.length() > 0) {
+        return app.toUpperCase();
+      }
         return _app;
     }
 
     private WriteLock writeLock = new ReentrantReadWriteLock().writeLock();
-    private final Map<String, EVCacheInMemoryCache<?>> inMemoryMap = new ConcurrentHashMap<String, EVCacheInMemoryCache<?>>();
+    private final Map<String, EVCacheInMemoryCache<?>> inMemoryMap = new ConcurrentHashMap<>();
     @SuppressWarnings("unchecked")
     public <T> EVCacheInMemoryCache<T> createInMemoryCache(Transcoder<T> tc, EVCacheImpl impl) {
         final String name = impl.getCachePrefix() == null ? impl.getAppName() : impl.getAppName() + impl.getCachePrefix();
@@ -273,7 +302,7 @@ public class EVCacheClientPoolManager {
         if(cache == null) {
             writeLock.lock();
             if((cache = getInMemoryCache(name)) == null) {
-                cache = new EVCacheInMemoryCache<T>(impl.getAppName(), tc, impl);
+                cache = new EVCacheInMemoryCache<>(impl.getAppName(), tc, impl);
                 inMemoryMap.put(name, cache);
             }
             writeLock.unlock();

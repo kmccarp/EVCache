@@ -20,9 +20,9 @@ public class EVCacheTracingEventListener implements EVCacheEventListener {
 
   public static String EVCACHE_SPAN_NAME = "evcache";
 
-  private static Logger logger = LoggerFactory.getLogger(EVCacheTracingEventListener.class);
+  private static final Logger logger = LoggerFactory.getLogger(EVCacheTracingEventListener.class);
 
-  private static String CLIENT_SPAN_ATTRIBUTE_KEY = "clientSpanAttributeKey";
+  private static final String CLIENT_SPAN_ATTRIBUTE_KEY = "clientSpanAttributeKey";
 
   private final Tracer tracer;
 
@@ -88,12 +88,12 @@ public class EVCacheTracingEventListener implements EVCacheEventListener {
         }
       }
 
-      if(hashKeys.size() > 0) {
+      if(!hashKeys.isEmpty()) {
         this.safeTag(clientSpan, EVCacheTracingTags.HASH_KEYS,
                 hashKeys.stream().collect(Collectors.joining(",", "[", "]")));
       }
 
-      if(canonicalKeys.size() > 0) {
+      if(!canonicalKeys.isEmpty()) {
         this.safeTag(clientSpan, EVCacheTracingTags.CANONICAL_KEYS,
                 canonicalKeys.stream().collect(Collectors.joining(",", "[", "]")));
       }

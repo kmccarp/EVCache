@@ -37,7 +37,9 @@ public class EVCacheConnection extends MemcachedConnection {
         } finally {
             if(running) {
                 running = false;
-                if(log.isWarnEnabled()) log.warn("Forceful shutdown by interrupting the thread.", new Exception());
+              if (log.isWarnEnabled()) {
+                log.warn("Forceful shutdown by interrupting the thread.", new Exception());
+              }
                 interrupt();
             }
         }
@@ -48,21 +50,33 @@ public class EVCacheConnection extends MemcachedConnection {
             try {
                 handleIO();
             } catch (IOException e) {
-                if (log.isDebugEnabled()) log.debug(e.getMessage(), e);
+              if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+              }
             } catch (CancelledKeyException e) {
-                if (log.isDebugEnabled()) log.debug(e.getMessage(), e);
+              if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+              }
             } catch (ClosedSelectorException e) {
-                if (log.isDebugEnabled()) log.debug(e.getMessage(), e);
+              if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+              }
             } catch (IllegalStateException e) {
-                if (log.isDebugEnabled()) log.debug(e.getMessage(), e);
+              if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+              }
             } catch (ConcurrentModificationException e) {
-                if (log.isDebugEnabled()) log.debug(e.getMessage(), e);
+              if (log.isDebugEnabled()) {
+                log.debug(e.getMessage(), e);
+              }
             } catch (Throwable e) {
                 log.error("SEVERE EVCACHE ISSUE.", e);// This ensures the thread
                                                       // doesn't die
             }
         }
-        if (log.isDebugEnabled()) log.debug(toString() + " : Shutdown");
+      if (log.isDebugEnabled()) {
+        log.debug(toString() + " : Shutdown");
+      }
     }
 
     public String toString() {

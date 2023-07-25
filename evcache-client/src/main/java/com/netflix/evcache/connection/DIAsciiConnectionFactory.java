@@ -18,14 +18,16 @@ import net.spy.memcached.NodeLocator;
 
 public class DIAsciiConnectionFactory extends BaseAsciiConnectionFactory {
 
-	private static Logger log = LoggerFactory.getLogger(DIAsciiConnectionFactory.class);
+  private static final Logger log = LoggerFactory.getLogger(DIAsciiConnectionFactory.class);
     private final EurekaClient eurekaClient;
 
     DIAsciiConnectionFactory(EVCacheClient client, EurekaClient eurekaClient, int len, Property<Integer> operationTimeout, long opMaxBlockTime) {
         super(client, len, operationTimeout, opMaxBlockTime);
         client.addTag(EVCacheMetricsFactory.CONNECTION, "ASCII");
         this.eurekaClient = eurekaClient;
-    	if(log.isInfoEnabled()) log.info("Using ASCII Connection Factory!!!");
+      if (log.isInfoEnabled()) {
+        log.info("Using ASCII Connection Factory!!!");
+      }
     }
 
     @Override

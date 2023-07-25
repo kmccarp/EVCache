@@ -29,9 +29,9 @@ import rx.schedulers.Schedulers;
 public class SimpleEurekaEVCacheTest extends Base {
     private static final Logger log = LoggerFactory.getLogger(SimpleEurekaEVCacheTest.class);
 
-    private ThreadPoolExecutor pool = null;
+    private ThreadPoolExecutor pool;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         SimpleEurekaEVCacheTest test = new SimpleEurekaEVCacheTest();
         test.setProps();
         test.testAll();
@@ -57,7 +57,7 @@ public class SimpleEurekaEVCacheTest extends Base {
         System.setProperty("evcache.thread.daemon", "true");
 
         int maxThreads = 2;
-        final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(100000);
+        final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>(100000);
         pool = new ThreadPoolExecutor(maxThreads * 4, maxThreads * 4, 30, TimeUnit.SECONDS, queue);
         pool.prestartAllCoreThreads();
 
@@ -93,9 +93,13 @@ public class SimpleEurekaEVCacheTest extends Base {
                     testAppendOrAdd();
                     testCompletableFutureGet();
                     testCompletableFutureBulk();
-                    if(i++ % 5 == 0) testDelete();
+                  if (i++ % 5 == 0) {
+                    testDelete();
+                  }
                     Thread.sleep(1000);
-                    if (i > 100) break;
+                  if (i > 100) {
+                    break;
+                  }
                 } catch (Exception e) {
                     log.error("Exception", e);
                 }
@@ -110,7 +114,9 @@ public class SimpleEurekaEVCacheTest extends Base {
 
     public void testGetForKey(String key) throws Exception {
         String value = evCache.<String>get(key);
-        if(log.isDebugEnabled()) log.debug("get : key : " + key + " val = " + value);
+      if (log.isDebugEnabled()) {
+        log.debug("get : key : " + key + " val = " + value);
+      }
     }
 
 
@@ -240,7 +246,9 @@ public class SimpleEurekaEVCacheTest extends Base {
     public void testInsertAsync() throws Exception {
         for (int i = 0; i < 10; i++) {
             boolean flag = insertAsync(i, evCache);
-            if(log.isDebugEnabled()) log.debug("SET : async : i: " + i + " flag = " + flag);
+          if (log.isDebugEnabled()) {
+            log.debug("SET : async : i: " + i + " flag = " + flag);
+          }
             assertTrue(flag, "SET ASYNC : Following Index failed - " + i + " for evcache - " + evCache);
         }
     }
@@ -303,7 +311,9 @@ public class SimpleEurekaEVCacheTest extends Base {
         public void run() {
             try {
                 for (Future<Boolean> s : status) {
-                    if (log.isDebugEnabled()) log.debug("SET : key : " + key + "; success = " + s.get());
+                  if (log.isDebugEnabled()) {
+                    log.debug("SET : key : " + key + "; success = " + s.get());
+                  }
                 }
             } catch (Exception e) {
                 log.error("Exception", e);

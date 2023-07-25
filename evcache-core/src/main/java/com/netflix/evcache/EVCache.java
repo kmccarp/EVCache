@@ -66,8 +66,8 @@ import rx.Single;
  * @author smadappa
  */
 public interface EVCache {
-    // TODO: Remove Async methods (Project rx) and rename  COMPLETABLE_* with ASYNC_*
-    public static enum Call {
+  // TODO: Remove Async methods (Project rx) and rename  COMPLETABLE_* with ASYNC_*
+  public enum Call {
         GET, GETL, GET_AND_TOUCH, ASYNC_GET, BULK, SET, DELETE, INCR, DECR, TOUCH, APPEND, PREPEND, REPLACE, ADD, APPEND_OR_ADD, GET_ALL, META_GET, META_SET, META_DEBUG,
         COMPLETABLE_FUTURE_GET, COMPLETABLE_FUTURE_GET_BULK
     };
@@ -1203,11 +1203,11 @@ public interface EVCache {
         private static final Logger logger = LoggerFactory.getLogger(EVCacheImpl.class);
 
         private String _appName;
-        private String _cachePrefix = null;
+        private String _cachePrefix;
         private int _ttl = 900;
-        private Transcoder<?> _transcoder = null;
+        private Transcoder<?> _transcoder;
         private boolean _serverGroupRetry = true;
-        private boolean _enableExceptionThrowing = false;
+        private boolean _enableExceptionThrowing;
         private List<Customizer> _customizers = new ArrayList<>();
 
         @Inject
@@ -1252,9 +1252,13 @@ public interface EVCache {
          * @return this {@code Builder} object
          */
         public Builder setAppName(String appName) {
-            if (appName == null) throw new IllegalArgumentException("param appName cannot be null.");
+          if (appName == null) {
+            throw new IllegalArgumentException("param appName cannot be null.");
+          }
             this._appName = appName.toUpperCase(Locale.US);
-            if (!_appName.startsWith("EVCACHE")) logger.warn("Make sure the app you are connecting to is EVCache App");
+          if (!_appName.startsWith("EVCACHE")) {
+            logger.warn("Make sure the app you are connecting to is EVCache App");
+          }
             return this;
         }
 
@@ -1269,8 +1273,10 @@ public interface EVCache {
          * @return this {@code Builder} object
          */
         public Builder setCachePrefix(String cachePrefix) {
-            if (_cachePrefix != null && _cachePrefix.indexOf(':') != -1) throw new IllegalArgumentException(
-                    "param cacheName cannot contain ':' character.");
+          if (_cachePrefix != null && _cachePrefix.indexOf(':') != -1) {
+            throw new IllegalArgumentException(
+                "param cacheName cannot contain ':' character.");
+          }
             this._cachePrefix = cachePrefix;
             return this;
         }
@@ -1299,7 +1305,9 @@ public interface EVCache {
          * @return this {@code Builder} object
          */
         public Builder setDefaultTTL(int ttl) {
-            if (ttl < 0) throw new IllegalArgumentException("Time to Live cannot be less than 0.");
+          if (ttl < 0) {
+            throw new IllegalArgumentException("Time to Live cannot be less than 0.");
+          }
             this._ttl = ttl;
             return this;
         }
@@ -1449,9 +1457,7 @@ public interface EVCache {
        * @return this {@code Builder} object
        */
       public Builder customize() {
-        _customizers.forEach(customizer -> {
-          customizeWith(customizer);
-        });
+        _customizers.forEach(this::customizeWith);
 
         return this;
       }
@@ -1480,7 +1486,9 @@ public interface EVCache {
         public EVCache build() {
             if (_poolManager == null) {
                 _poolManager = EVCacheClientPoolManager.getInstance();
-                if (logger.isDebugEnabled()) logger.debug("_poolManager - " + _poolManager + " through getInstance");
+              if (logger.isDebugEnabled()) {
+                logger.debug("_poolManager - " + _poolManager + " through getInstance");
+              }
             }
 
             if (_appName == null) {

@@ -13,7 +13,7 @@ import com.netflix.evcache.pool.ServerGroup;
  */
 public class ServerGroupCircularIterator {
     private Entry<ServerGroup> entry;
-    private int size = 0;
+    private int size;
 
     /**
      * Creates an instance of ReplicaSetCircularIterator across all ReplicaSets.
@@ -22,13 +22,17 @@ public class ServerGroupCircularIterator {
      *            Set of all available ReplicaSets.
      */
     public ServerGroupCircularIterator(Set<ServerGroup> allReplicaSets) {
-        if (allReplicaSets == null || allReplicaSets.isEmpty()) return;
+      if (allReplicaSets == null || allReplicaSets.isEmpty()) {
+        return;
+      }
         Entry<ServerGroup> pEntry = null;
         for (Iterator<ServerGroup> itr = allReplicaSets.iterator(); itr.hasNext();) {
             size++;
             final ServerGroup rSet = itr.next();
-            final Entry<ServerGroup> newEntry = new Entry<ServerGroup>(rSet, pEntry);
-            if (entry == null) entry = newEntry;
+            final Entry<ServerGroup> newEntry = new Entry<>(rSet, pEntry);
+          if (entry == null) {
+            entry = newEntry;
+          }
             pEntry = newEntry;
         }
 
@@ -47,7 +51,9 @@ public class ServerGroupCircularIterator {
      *         are none then null is returned.
      */
     public ServerGroup next() {
-        if (entry == null) return null;
+      if (entry == null) {
+        return null;
+      }
         entry = entry.next;
         return entry.element;
     }
@@ -60,7 +66,9 @@ public class ServerGroupCircularIterator {
      *         null is returned.
      */
     public ServerGroup next(ServerGroup ignoreReplicaSet) {
-        if (entry == null) return null;
+      if (entry == null) {
+        return null;
+      }
         entry = entry.next;
         if (entry.element.equals(ignoreReplicaSet)) {
             return entry.next.element;

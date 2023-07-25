@@ -18,8 +18,11 @@ public class ConnectionFactoryBuilder implements IConnectionBuilder {
         final int opQueueMaxBlockTime = EVCacheConfig.getInstance().getPropertyRepository().get(appName + ".operation.QueueMaxBlockTime", Integer.class).orElse(10).get();
         final boolean useBinary = EVCacheConfig.getInstance().getPropertyRepository().get("evcache.use.binary.protocol", Boolean.class).orElse(true).get();
 
-        if(useBinary) return new BaseConnectionFactory(client, maxQueueSize, operationTimeout, opQueueMaxBlockTime);
-        else return new BaseAsciiConnectionFactory(client, maxQueueSize, operationTimeout, opQueueMaxBlockTime);
+      if (useBinary) {
+        return new BaseConnectionFactory(client, maxQueueSize, operationTimeout, opQueueMaxBlockTime);
+      } else {
+        return new BaseAsciiConnectionFactory(client, maxQueueSize, operationTimeout, opQueueMaxBlockTime);
+      }
     }
 
 }

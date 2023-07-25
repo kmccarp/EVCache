@@ -62,8 +62,10 @@ public class EVCacheKey {
     private String getCanonicalKeyForDuet() {
         if (null == canonicalKeyForDuet) {
             final int duetKeyLength = appName.length() + 1 + canonicalKey.length();
-            canonicalKeyForDuet = new StringBuilder(duetKeyLength).append(appName).append(':').append(canonicalKey).toString();
-            if (log.isDebugEnabled()) log.debug("canonicalKeyForDuet : " + canonicalKeyForDuet);
+            canonicalKeyForDuet = appName + ':' + canonicalKey;
+          if (log.isDebugEnabled()) {
+            log.debug("canonicalKeyForDuet : " + canonicalKeyForDuet);
+          }
         }
 
         return canonicalKeyForDuet;
@@ -101,7 +103,9 @@ public class EVCacheKey {
         }
 
         final String rKey = isDuet ? getHashKeyForDuet(hashingAlgorithm, shouldEncodeHashKey, maxDigestBytes, maxHashLength, baseEnoder) : getHashKey(hashingAlgorithm, shouldEncodeHashKey, maxDigestBytes, maxHashLength, baseEnoder);
-        if (log.isDebugEnabled()) log.debug("Key : " + rKey);
+      if (log.isDebugEnabled()) {
+        log.debug("Key : " + rKey);
+      }
         return rKey;
     }
 
@@ -113,7 +117,9 @@ public class EVCacheKey {
         }
 
         final String derivedKey = null == hashingAlgorithm || hashingAlgorithm == HashingAlgorithm.NO_HASHING ? getCanonicalKey(isDuet) : getHashKey(isDuet, hashingAlgorithm, shouldEncodeHashKey, maxDigestBytes, maxHashLength, baseEnoder);
-        if (log.isDebugEnabled()) log.debug("derivedKey : " + derivedKey);
+      if (log.isDebugEnabled()) {
+        log.debug("derivedKey : " + derivedKey);
+      }
         return derivedKey;
     }
 
@@ -128,7 +134,9 @@ public class EVCacheKey {
             val = KeyHasher.getHashedKeyEncoded(getCanonicalKey(false), hashingAlgorithm, maxDigestBytes, maxHashLength, encoder);
             hashedKeysByAlgorithm.put(key , val);
         }
-        if (log.isDebugEnabled()) log.debug("getHashKey : " + val);
+      if (log.isDebugEnabled()) {
+        log.debug("getHashKey : " + val);
+      }
         // TODO: Once the issue around passing hashedKey in bytes[] is figured, we will start using (nullable) shouldEncodeHashKey, and call KeyHasher.getHashedKeyInBytes() accordingly
         return val;
     }
@@ -144,7 +152,9 @@ public class EVCacheKey {
             val = KeyHasher.getHashedKeyEncoded(getCanonicalKeyForDuet(), hashingAlgorithm, maxDigestBytes, maxHashLength, encoder);
             hashedKeysByAlgorithmForDuet.put(key , val);
         }
-        if (log.isDebugEnabled()) log.debug("getHashKeyForDuet : " + val);
+      if (log.isDebugEnabled()) {
+        log.debug("getHashKeyForDuet : " + val);
+      }
         // TODO: Once the issue around passing hashedKey in bytes[] is figured, we will start using (nullable) shouldEncodeHashKey, and call KeyHasher.getHashedKeyInBytes() accordingly
         return val;
     }
@@ -161,28 +171,37 @@ public class EVCacheKey {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
         EVCacheKey other = (EVCacheKey) obj;
         if (canonicalKey == null) {
-            if (other.canonicalKey != null)
-                return false;
-        } else if (!canonicalKey.equals(other.canonicalKey))
+          if (other.canonicalKey != null) {
             return false;
+          }
+        } else if (!canonicalKey.equals(other.canonicalKey)) {
+          return false;
+        }
         if (canonicalKeyForDuet == null) {
-            if (other.canonicalKeyForDuet != null)
-                return false;
-        } else if (!canonicalKeyForDuet.equals(other.canonicalKeyForDuet))
+          if (other.canonicalKeyForDuet != null) {
             return false;
+          }
+        } else if (!canonicalKeyForDuet.equals(other.canonicalKeyForDuet)) {
+          return false;
+        }
         if (key == null) {
-            if (other.key != null)
-                return false;
-        } else if (!key.equals(other.key))
+          if (other.key != null) {
             return false;
+          }
+        } else if (!key.equals(other.key)) {
+          return false;
+        }
         return true;
     }
 
