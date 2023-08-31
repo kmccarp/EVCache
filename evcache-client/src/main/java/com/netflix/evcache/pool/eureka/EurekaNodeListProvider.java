@@ -35,10 +35,10 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
 
     private static final Logger log = LoggerFactory.getLogger(EurekaNodeListProvider.class);
     private final EurekaClient _eurekaClient;
-    private PropertyRepository props;
+  private final PropertyRepository props;
     private final ApplicationInfoManager applicationInfoManager;
     @SuppressWarnings("rawtypes") // Archaius2 PropertyRepository does not support ParameterizedTypes
-	private Property<Set> ignoreHosts = null;
+	private Property<Set> ignoreHosts;
 
     public EurekaNodeListProvider(ApplicationInfoManager applicationInfoManager, EurekaClient eurekaClient, PropertyRepository props) {
         this.applicationInfoManager = applicationInfoManager;
@@ -52,30 +52,35 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
      * @see com.netflix.evcache.pool.EVCacheNodeList#discoverInstances()
      */
     @Override
-    public Map<ServerGroup, EVCacheServerGroupConfig> discoverInstances(String _appName) throws IOException {
+    public Map<ServerGroup, EVCacheServerGroupConfig> discoverInstances(String appName) throws IOException {
         final Property<Boolean> ignoreAppEurekaStatus = props.get("evcache.ignoreAppEurekaStatus", Boolean.class).orElse(false);
 
-        if (ignoreAppEurekaStatus.get())
-            log.info("Not going to consider the eureka status of the application, to initialize evcache client.");
+      if (ignoreAppEurekaStatus.get()) {
+        log.info("Not going to consider the eureka status of the application, to initialize evcache client.");
+      }
 
         if (!ignoreAppEurekaStatus.get() && (applicationInfoManager.getInfo().getStatus() == InstanceStatus.DOWN)) {
             log.info("Not initializing evcache client as application eureka status is DOWN. " +
                     "One can override this behavior by setting evcache.ignoreAppEurekaStatus property to true, scoped to your application.");
-            return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+            return Collections. emptyMap();
         }
 
         /* Get a list of EVCACHE instances from the DiscoveryManager */
-        final Application app = _eurekaClient.getApplication(_appName);
-        if (app == null) return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+        final Application app = _eurekaClient.getApplication(appName);
+      if (app == null) {
+        return Collections.emptyMap();
+      }
 
         final List<InstanceInfo> appInstances = app.getInstances();
-        final Map<ServerGroup, EVCacheServerGroupConfig> instancesSpecific = new HashMap<ServerGroup, EVCacheServerGroupConfig>();
+        final Map<ServerGroup, EVCacheServerGroupConfig> instancesSpecific = new HashMap<>();
 
         /* Iterate all the discovered instances to find usable ones */
         for (InstanceInfo iInfo : appInstances) {
             final DataCenterInfo dcInfo = iInfo.getDataCenterInfo();
             if (dcInfo == null) {
-                if (log.isErrorEnabled()) log.error("Data Center Info is null for appName - " + _appName);
+              if (log.isErrorEnabled()) {
+                log.error("Data Center Info is null for appName - " + appName);
+              }
                 continue;
             }
 
@@ -83,7 +88,7 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
             if (DataCenterInfo.Name.Amazon != dcInfo.getName() || !(dcInfo instanceof AmazonInfo)) {
                 log.error("This is not an AWSDataCenter. You will not be able to use Discovery Nodelist Provider. Cannot proceed. " +
                           "DataCenterInfo : {}; appName - {}. Please use SimpleNodeList provider and specify the server groups manually.",
-                          dcInfo, _appName);
+                          dcInfo, appName);
                 continue;
             }
 
@@ -91,16 +96,16 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
             // We checked above if this instance is Amazon so no need to do a instanceof check
             final String zone = amznInfo.get(AmazonInfo.MetaDataKey.availabilityZone);
             if(zone == null) {
-                final List<Tag> tagList = new ArrayList<Tag>(3);
-                EVCacheMetricsFactory.getInstance().addAppNameTags(tagList, _appName);
+                final List<Tag> tagList = new ArrayList<>(3);
+                EVCacheMetricsFactory.getInstance().addAppNameTags(tagList, appName);
                 tagList.add(new BasicTag(EVCacheMetricsFactory.CONFIG_NAME, EVCacheMetricsFactory.NULL_ZONE));
                 EVCacheMetricsFactory.getInstance().increment(EVCacheMetricsFactory.CONFIG, tagList);
                 continue;
             }
             final String asgName = iInfo.getASGName();
             if(asgName == null) {
-                final List<Tag> tagList = new ArrayList<Tag>(3);
-                EVCacheMetricsFactory.getInstance().addAppNameTags(tagList, _appName);
+                final List<Tag> tagList = new ArrayList<>(3);
+                EVCacheMetricsFactory.getInstance().addAppNameTags(tagList, appName);
                 tagList.add(new BasicTag(EVCacheMetricsFactory.CONFIG_NAME, EVCacheMetricsFactory.NULL_SERVERGROUP));
                 EVCacheMetricsFactory.getInstance().increment(EVCacheMetricsFactory.CONFIG, tagList);
                 continue;
@@ -108,7 +113,9 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
 
             final Property<Boolean> asgEnabled = props.get(asgName + ".enabled", Boolean.class).orElse(true);
             if (!asgEnabled.get()) {
-                if(log.isDebugEnabled()) log.debug("ASG " + asgName + " is disabled so ignoring it");
+              if (log.isDebugEnabled()) {
+                log.debug("ASG " + asgName + " is disabled so ignoring it");
+              }
                 continue;
             }
 
@@ -119,7 +126,7 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
 
             int port = evcachePort;
             final Property<Boolean> isSecure = props.get(asgName + ".use.secure", Boolean.class)
-                    .orElseGet(_appName + ".use.secure")
+                    .orElseGet(appName + ".use.secure")
                     .orElseGet("evcache.use.secure")
                     .orElse(false);
             if(isSecure.get()) {
@@ -134,7 +141,7 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
                 config = instancesSpecific.get(serverGroup);
                 instances = config.getInetSocketAddress();
             } else {
-                instances = new HashSet<InetSocketAddress>();
+                instances = new HashSet<>();
                 config = new EVCacheServerGroupConfig(serverGroup, instances);
                 instancesSpecific.put(serverGroup, config);
                 //EVCacheMetricsFactory.getInstance().getRegistry().gauge(EVCacheMetricsFactory.getInstance().getRegistry().createId(_appName + "-port", "ServerGroup", asgName, "APP", _appName), Long.valueOf(port));
@@ -143,8 +150,10 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
             /* Don't try to use downed instances */
             final InstanceStatus status = iInfo.getStatus();
             if (status == null || InstanceStatus.OUT_OF_SERVICE == status || InstanceStatus.DOWN == status) {
-                if (log.isDebugEnabled()) log.debug("The Status of the instance in Discovery is " + status + ". App Name : " + _appName + "; Zone : " + zone
-                        + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+              if (log.isDebugEnabled()) {
+                log.debug("The Status of the instance in Discovery is " + status + ". App Name : " + appName + "; Zone : " + zone
+                    + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+              }
                 continue;
             }
 
@@ -175,33 +184,47 @@ public class EurekaNodeListProvider implements EVCacheNodeList {
             InetSocketAddress address = null;
             final String vpcId = amznInfo.get(AmazonInfo.MetaDataKey.vpcId);
             final String localIp = amznInfo.get(AmazonInfo.MetaDataKey.localIpv4);
-            if (log.isDebugEnabled()) log.debug("myZone - " + myZone + "; zone : " + zone + "; myRegion : " + myRegion + "; region : " + region + "; host : " + host + "; vpcId : " + vpcId);
+          if (log.isDebugEnabled()) {
+            log.debug("myZone - " + myZone + "; zone : " + zone + "; myRegion : " + myRegion + "; region : " + region + "; host : " + host + "; vpcId : " + vpcId);
+          }
 
-            if(ignoreHosts == null) ignoreHosts = props.get(_appName + ".ignore.hosts", Set.class).orElse(Collections.emptySet());
-            if(localIp != null && ignoreHosts.get().contains(localIp)) continue;
-            if(host != null && ignoreHosts.get().contains(host)) continue;
+          if (ignoreHosts == null) {
+            ignoreHosts = props.get(appName + ".ignore.hosts", Set.class).orElse(Collections.emptySet());
+          }
+          if (localIp != null && ignoreHosts.get().contains(localIp)) {
+            continue;
+          }
+          if (host != null && ignoreHosts.get().contains(host)) {
+            continue;
+          }
 
             if (vpcId != null) {
                 final InetAddress add = InetAddresses.forString(localIp);
                 final InetAddress inetAddress = InetAddress.getByAddress(localIp, add.getAddress());
                 address = new InetSocketAddress(inetAddress, port);
 
-                if (log.isDebugEnabled()) log.debug("VPC : localIp - " + localIp + " ; add : " + add + "; inetAddress : " + inetAddress + "; address - " + address
-                        + "; App Name : " + _appName + "; Zone : " + zone + "; myZone - " + myZone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+              if (log.isDebugEnabled()) {
+                log.debug("VPC : localIp - " + localIp + " ; add : " + add + "; inetAddress : " + inetAddress + "; address - " + address
+                    + "; App Name : " + appName + "; Zone : " + zone + "; myZone - " + myZone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+              }
             } else {
                 if(host != null && host.startsWith("ec2")) {
                     final InetAddress inetAddress = (localIp != null) ? InetAddress.getByAddress(host, InetAddresses.forString(localIp).getAddress()) : InetAddress.getByName(host);
                     address = new InetSocketAddress(inetAddress, port);
-                    if (log.isDebugEnabled()) log.debug("myZone - " + myZone + ". host : " + host
-                            + "; inetAddress : " + inetAddress + "; address - " + address + "; App Name : " + _appName
-                            + "; Zone : " + zone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+                  if (log.isDebugEnabled()) {
+                    log.debug("myZone - " + myZone + ". host : " + host
+                        + "; inetAddress : " + inetAddress + "; address - " + address + "; App Name : " + appName
+                        + "; Zone : " + zone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+                  }
                 } else {
-                    final String ipToUse = (isInCloud) ? localIp : amznInfo.get(AmazonInfo.MetaDataKey.publicIpv4);
+                    final String ipToUse = isInCloud ? localIp : amznInfo.get(AmazonInfo.MetaDataKey.publicIpv4);
                     final InetAddress add = InetAddresses.forString(ipToUse);
                     final InetAddress inetAddress = InetAddress.getByAddress(ipToUse, add.getAddress());
                     address = new InetSocketAddress(inetAddress, port);
-                    if (log.isDebugEnabled()) log.debug("CLASSIC : IPToUse - " + ipToUse + " ; add : " + add + "; inetAddress : " + inetAddress + "; address - " + address
-                            + "; App Name : " + _appName + "; Zone : " + zone + "; myZone - " + myZone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+                  if (log.isDebugEnabled()) {
+                    log.debug("CLASSIC : IPToUse - " + ipToUse + " ; add : " + add + "; inetAddress : " + inetAddress + "; address - " + address
+                        + "; App Name : " + appName + "; Zone : " + zone + "; myZone - " + myZone + "; Host : " + iInfo.getHostName() + "; Instance Id - " + iInfo.getId());
+                  }
                 }
             }
 

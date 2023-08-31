@@ -21,8 +21,8 @@ public class MetaGetOperationImpl extends EVCacheOperationImpl implements MetaGe
 
     private final String key;
     private int currentFlag = -1;
-    private byte[] data = null;
-    private int readOffset = 0;
+    private byte[] data;
+    private int readOffset;
     private byte lookingFor = '\0';
 
     public MetaGetOperationImpl(String k, MetaGetOperation.Callback cb) {
@@ -33,38 +33,54 @@ public class MetaGetOperationImpl extends EVCacheOperationImpl implements MetaGe
 
     @Override
     public void handleLine(String line) {
-        if(log.isDebugEnabled()) log.debug("meta get of {} returned {}", key, line);
-        if (line.length() == 0 || line.equals("EN")) {
+      if (log.isDebugEnabled()) {
+        log.debug("meta get of {} returned {}", key, line);
+      }
+        if (line.length() == 0 || "EN".equals(line)) {
             getCallback().receivedStatus(END);
             transitionState(OperationState.COMPLETE);
         } else if (line.startsWith("VA")) {
             String[] parts = line.split(" ");
-            if(log.isDebugEnabled()) log.debug("Num of parts "+ parts.length);
-            if(parts.length <= 2) return;
+          if (log.isDebugEnabled()) {
+            log.debug("Num of parts " + parts.length);
+          }
+          if (parts.length <= 2) {
+            return;
+          }
 
             int size = Integer.parseInt(parts[1]);
-            if(log.isDebugEnabled()) log.debug("Size of value in bytes : "+ size);
+          if (log.isDebugEnabled()) {
+            log.debug("Size of value in bytes : " + size);
+          }
             data = new byte[size];
 
             for(int i = 2; i < parts.length; i++) {
                 final char flag = parts[i].charAt(0);
                 final String val = parts[i].substring(1);
-                if(log.isDebugEnabled()) log.debug("flag="+ flag + "; Val=" + val);
+              if (log.isDebugEnabled()) {
+                log.debug("flag=" + flag + "; Val=" + val);
+              }
                 cb.gotMetaData(key, flag, val);
-                if(flag == 'f') currentFlag = Integer.parseInt(val);
+              if (flag == 'f') {
+                currentFlag = Integer.parseInt(val);
+              }
             }
             setReadType(OperationReadType.DATA);
         }
     }
 
     public void handleRead(ByteBuffer b) {
-        if(log.isDebugEnabled()) log.debug("readOffset: {}, length: {}", readOffset, data.length);
+      if (log.isDebugEnabled()) {
+        log.debug("readOffset: {}, length: {}", readOffset, data.length);
+      }
         // If we're not looking for termination, we're still looking for data
         if (lookingFor == '\0') {
             int toRead = data.length - readOffset;
             int available = b.remaining();
             toRead = Math.min(toRead, available);
-            if(log.isDebugEnabled()) log.debug("Reading {} bytes", toRead);
+          if (log.isDebugEnabled()) {
+            log.debug("Reading {} bytes", toRead);
+          }
             b.get(data, readOffset, toRead);
             readOffset += toRead;
         }

@@ -25,9 +25,9 @@ import com.netflix.evcache.operation.EVCacheOperationFuture;
 import rx.functions.Action1;
 
 public class MockEVCacheTest {
-    protected EVCache evCache = null;
+    protected EVCache evCache;
     private static final Logger log = LoggerFactory.getLogger(MockEVCacheTest.class);
-    private int loops = 10;
+  private final int loops = 10;
 
     public MockEVCacheTest() {
     }
@@ -43,8 +43,12 @@ public class MockEVCacheTest {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.set(key, val, 24 * 60 * 60);
         for(Future<Boolean> s : status) {
-            if(log.isDebugEnabled()) log.debug("SET : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if(s.get() == Boolean.FALSE) return false;
+          if (log.isDebugEnabled()) {
+            log.debug("SET : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+          }
+          if (s.get() == Boolean.FALSE) {
+            return false;
+          }
         }
         return true;
     }
@@ -54,8 +58,12 @@ public class MockEVCacheTest {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.delete(key);
         for(Future<Boolean> s : status) {
-            if(log.isDebugEnabled()) log.debug("DELETE : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if(s.get() == Boolean.FALSE) return false;
+          if (log.isDebugEnabled()) {
+            log.debug("DELETE : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+          }
+          if (s.get() == Boolean.FALSE) {
+            return false;
+          }
         }
         return true;
     }
@@ -68,35 +76,47 @@ public class MockEVCacheTest {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.touch(key, ttl);
         for (Future<Boolean> s : status) {
-            if (log.isDebugEnabled()) log.debug("TOUCH : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if (s.get() == Boolean.FALSE) return false;
+          if (log.isDebugEnabled()) {
+            log.debug("TOUCH : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+          }
+          if (s.get() == Boolean.FALSE) {
+            return false;
+          }
         }
         return true;
     }
 
     public String get(int i, EVCache gCache) throws Exception {
         String key = "key_" + i;
-        String value = gCache.<String>get(key);
-        if(log.isDebugEnabled()) log.debug("get : key : " + key + " val = " + value);
+        String value = gCache.get(key);
+      if (log.isDebugEnabled()) {
+        log.debug("get : key : " + key + " val = " + value);
+      }
         return value;
     }
 
     public String getAndTouch(int i, EVCache gCache) throws Exception {
         String key = "key_" + i;
-        String value = gCache.<String>getAndTouch(key, 24 * 60 * 60);
-        if(log.isDebugEnabled()) log.debug("getAndTouch : key : " + key + " val = " + value);
+        String value = gCache.getAndTouch(key, 24 * 60 * 60);
+      if (log.isDebugEnabled()) {
+        log.debug("getAndTouch : key : " + key + " val = " + value);
+      }
         return value;
     }
 
-    public Map<String, String> getBulk(String keys[], EVCache gCache) throws Exception {
-        final Map<String, String> value = gCache.<String>getBulk(keys);
-        if(log.isDebugEnabled()) log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+    public Map<String, String> getBulk(String[] keys, EVCache gCache) throws Exception {
+        final Map<String, String> value = gCache.getBulk(keys);
+      if (log.isDebugEnabled()) {
+        log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+      }
         return value;
     }
 
-    public Map<String, String> getBulkAndTouch(String keys[], EVCache gCache, int ttl) throws Exception {
-        final Map<String, String> value = gCache.<String>getBulkAndTouch(Arrays.asList(keys), null, ttl);
-        if(log.isDebugEnabled()) log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+    public Map<String, String> getBulkAndTouch(String[] keys, EVCache gCache, int ttl) throws Exception {
+        final Map<String, String> value = gCache.getBulkAndTouch(Arrays.asList(keys), null, ttl);
+      if (log.isDebugEnabled()) {
+        log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+      }
         return value;
     }
 
@@ -134,7 +154,9 @@ public class MockEVCacheTest {
         for (int i = 0; i < keys.length; i++) {
             String key = keys[i];
             String val = vals.get(key);
-            if (log.isDebugEnabled()) log.debug("key " + key + " returned val " + val);
+          if (log.isDebugEnabled()) {
+            log.debug("key " + key + " returned val " + val);
+          }
         }
     }
 
@@ -150,7 +172,9 @@ public class MockEVCacheTest {
             String key = "key_" + i;
             String val = vals.get(key);
             if (val == null) {
-                if (log.isDebugEnabled()) log.debug("key " + key + " returned null");
+              if (log.isDebugEnabled()) {
+                log.debug("key " + key + " returned null");
+              }
             } else {
                 assertTrue(val.equals("val_" + i));
             }
@@ -165,7 +189,9 @@ public class MockEVCacheTest {
     }
 
     public void onComplete(EVCacheOperationFuture<String> future) throws Exception {
-        if (log.isDebugEnabled()) log.debug("getl : key : " + future.getKey() + ", val = " + future.get());
+      if (log.isDebugEnabled()) {
+        log.debug("getl : key : " + future.getKey() + ", val = " + future.get());
+      }
     }
 
     static class OnErrorHandler implements Action1<Throwable> {
@@ -177,7 +203,9 @@ public class MockEVCacheTest {
 
         @Override
         public void call(Throwable t1) {
-            if (log.isDebugEnabled()) log.debug("Could not get value for key: " + key + "; Exception is ", t1);
+          if (log.isDebugEnabled()) {
+            log.debug("Could not get value for key: " + key + "; Exception is ", t1);
+          }
         }
     }
 
@@ -190,7 +218,9 @@ public class MockEVCacheTest {
 
         @Override
         public void call(String val) {
-            if (log.isDebugEnabled()) log.debug("Observable : key " + key + "; val = " + val);
+          if (log.isDebugEnabled()) {
+            log.debug("Observable : key " + key + "; val = " + val);
+          }
         }
 
     }

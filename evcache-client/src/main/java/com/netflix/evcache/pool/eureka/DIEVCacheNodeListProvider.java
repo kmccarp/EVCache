@@ -16,7 +16,7 @@ public class DIEVCacheNodeListProvider implements Provider<EVCacheNodeList> {
 
     private static final Logger log = LoggerFactory.getLogger(DIEVCacheNodeListProvider.class);
     private final EurekaClient eurekaClient;
-    private PropertyRepository props;
+  private final PropertyRepository props;
     private final ApplicationInfoManager applicationInfoManager;
 
     @Inject
@@ -34,7 +34,9 @@ public class DIEVCacheNodeListProvider implements Provider<EVCacheNodeList> {
         } else {
             provider = new EurekaNodeListProvider(applicationInfoManager, eurekaClient, props);
         }
-        if(log.isDebugEnabled()) log.debug("EVCache Node List Provider : " + provider);
+      if (log.isDebugEnabled()) {
+        log.debug("EVCache Node List Provider : " + provider);
+      }
         return provider;
     }
 

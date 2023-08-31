@@ -26,11 +26,11 @@ import static org.testng.Assert.*;
 
 public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener<String> {
     private static final Logger log = LoggerFactory.getLogger(EVCacheTestDI.class);
-    private int loops = 1;
-    private Map<String, String> propertiesToSet;
-    private String appName = "EVCACHE_TEST";
+  private final int loops = 1;
+  private final Map<String, String> propertiesToSet;
+  private final String appName = "EVCACHE_TEST";
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             EVCacheTestDI test = new EVCacheTestDI();
             test.testAll();
@@ -76,11 +76,15 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
         boolean exceptionThrown = false;
         for (int i = 0; i < loops; i++) {
             try {
-                if (log.isDebugEnabled()) log.debug("Check key : " + key );
+              if (log.isDebugEnabled()) {
+                log.debug("Check key : " + key);
+              }
                 evCache.<String>get(key);
             } catch(Exception e) {
                 exceptionThrown = true;
-                if (log.isDebugEnabled()) log.debug("Check key : " + key  + ": INVALID");
+              if (log.isDebugEnabled()) {
+                log.debug("Check key : " + key  + ": INVALID");
+              }
             }
             assertTrue(exceptionThrown);
         }
@@ -89,11 +93,15 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
         exceptionThrown = false;
         for (int i = 0; i < loops; i++) {
             try {
-                if (log.isDebugEnabled()) log.debug("Check key length : " + longKey );
+              if (log.isDebugEnabled()) {
+                log.debug("Check key length : " + longKey);
+              }
                 evCache.<String>get(longKey);
             } catch(Exception e) {
                 exceptionThrown = true;
-                if (log.isDebugEnabled()) log.debug("Check key length: " + longKey  + ": INVALID");
+              if (log.isDebugEnabled()) {
+                log.debug("Check key length: " + longKey  + ": INVALID");
+              }
             }
             assertTrue(exceptionThrown);
         }
@@ -134,8 +142,12 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
         String key = "key_b_" + i;
         Future<Boolean>[] status = gCache.set(key, val, 24 * 60 * 60);
         for (Future<Boolean> s : status) {
-            if (log.isDebugEnabled()) log.debug("SET BYTES : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if (s.get() == Boolean.FALSE) return false;
+          if (log.isDebugEnabled()) {
+            log.debug("SET BYTES : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+          }
+          if (s.get() == Boolean.FALSE) {
+            return false;
+          }
         }
         return true;
     }
@@ -144,9 +156,11 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
     public void testGetBytes() throws Exception {
         for (int i = 0; i < loops; i++) {
             String key = "key_b_" + i;
-            byte[] value = evCache.<byte[]> get(key);
+            byte[] value = evCache. get(key);
             if(value != null) {
-                if (log.isDebugEnabled()) log.debug("get : key : " + key + " val length = " + value.length);
+              if (log.isDebugEnabled()) {
+                log.debug("get : key : " + key + " val length = " + value.length);
+              }
             }
             assertNotNull(value);
         }
@@ -189,7 +203,9 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
             String key = keys[i];
             String val = vals.get(key);
             if (val == null) {
-                if (log.isDebugEnabled()) log.debug("key " + key + " returned null");
+              if (log.isDebugEnabled()) {
+                log.debug("key " + key + " returned null");
+              }
             } else {
                 assertTrue(val.equals("val_" + i));
             }
@@ -208,7 +224,9 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
             String key = "key_" + i;
             String val = vals.get(key);
             if (val == null) {
-                if (log.isDebugEnabled()) log.debug("key " + key + " returned null");
+              if (log.isDebugEnabled()) {
+                log.debug("key " + key + " returned null");
+              }
             } else {
                 assertTrue(val.equals("val_" + i));
             }
@@ -283,9 +301,7 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
         refreshEVCache();
         assertFalse(manager.getEVCacheConfig().getPropertyRepository().get(appName + ".auto.hash.keys", Boolean.class).orElse(false).get());
         assertFalse(manager.getEVCacheConfig().getPropertyRepository().get(appName + ".hash.key", Boolean.class).orElse(false).get());
-        assertThrows(IllegalArgumentException.class, () -> {
-            testWithLargeKey();
-        });
+        assertThrows(IllegalArgumentException.class, this::testWithLargeKey);
 
         // hashing at app level by choice AND different hashing at each asg
         Map<String, KeyHasher.HashingAlgorithm> hashingAlgorithmsByServerGroup = new HashMap<>();
@@ -391,7 +407,7 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
                 evCache.append(key3, value5, 1000);
             });
         } else {
-            Future<Boolean> futures[] = evCache.append(key3, value5, 1000);
+            Future<Boolean>[] futures = evCache.append(key3, value5, 1000);
             for (Future future : futures) {
                 assertTrue((Boolean) future.get());
             }
@@ -459,7 +475,9 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
                     testTouch();
                     testDelete();
                     testInsert();
-                    if(i % 2 == 0) testDelete();
+                  if (i % 2 == 0) {
+                    testDelete();
+                  }
                     testAdd();
 
                     Thread.sleep(100);
@@ -467,7 +485,9 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
                     log.error(e.getMessage(), e);
                 }
             }
-            if (log.isDebugEnabled()) log.debug("All Done!!!. Will exit.");
+          if (log.isDebugEnabled()) {
+            log.debug("All Done!!!. Will exit.");
+          }
             System.exit(0);
         } catch (Exception e) {
         	e.printStackTrace();
@@ -476,6 +496,8 @@ public class EVCacheTestDI extends DIBase implements EVCacheGetOperationListener
     }
 
     public void onComplete(EVCacheOperationFuture<String> future) throws Exception {
-        if (log.isDebugEnabled()) log.debug("getl : key : " + future.getKey() + ", val = " + future.get());
+      if (log.isDebugEnabled()) {
+        log.debug("getl : key : " + future.getKey() + ", val = " + future.get());
+      }
     }
 }

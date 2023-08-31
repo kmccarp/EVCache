@@ -47,8 +47,10 @@ public class VersionTracker implements Runnable {
                 jarName = "unknown";
             }
 
-            if(log.isInfoEnabled()) log.info("fullVersion : " + fullVersion + "; jarName : " + jarName);
-            final List<Tag> tagList = new ArrayList<Tag>(3);
+        if (log.isInfoEnabled()) {
+          log.info("fullVersion : " + fullVersion + "; jarName : " + jarName);
+        }
+            final List<Tag> tagList = new ArrayList<>(3);
             tagList.add(new BasicTag("version", fullVersion));
             tagList.add(new BasicTag("jarName", jarName));
 	        versionGauge = EVCacheMetricsFactory.getInstance().getLongGauge("evcache-client", tagList);

@@ -72,17 +72,23 @@ And if CAS and client flags are present:
             }
             log.debug("Key : " + key +"; hex : " + new String(hexChars));
         }
-        if(log.isDebugEnabled()) log.debug("Key : " + key +"; digest length : " + digest.length + "; byte Array contents : " + Arrays.toString(digest) );
+      if (log.isDebugEnabled()) {
+        log.debug("Key : " + key + "; digest length : " + digest.length + "; byte Array contents : " + Arrays.toString(digest));
+      }
         String hKey = null;
-        if(baseEncoder != null && baseEncoder.equals("ascii85")) {
+        if("ascii85".equals(baseEncoder)) {
             hKey = Ascii85.encode(digest);
-            if(log.isDebugEnabled()) log.debug("Key : " + key +"; Hashed & Ascii85 encoded key : " + hKey + "; Took " + (System.nanoTime() - start) + " nanos");
+          if (log.isDebugEnabled()) {
+            log.debug("Key : " + key + "; Hashed & Ascii85 encoded key : " + hKey + "; Took " + System.nanoTime() - start + " nanos");
+          }
         } else {
             hKey = encoder.encodeToString(digest);
             if (null != hKey && maxHashLength != null && maxHashLength > 0 && maxHashLength < hKey.length()) {
                 hKey = hKey.substring(0, maxHashLength);
             }
-            if(log.isDebugEnabled()) log.debug("Key : " + key +"; Hashed & encoded key : " + hKey + "; Took " + (System.nanoTime() - start) + " nanos");
+          if (log.isDebugEnabled()) {
+            log.debug("Key : " + key + "; Hashed & encoded key : " + hKey + "; Took " + System.nanoTime() - start + " nanos");
+          }
         } 
 
         return hKey;
@@ -91,7 +97,9 @@ And if CAS and client flags are present:
     public static byte[] getHashedKeyInBytes(String key, HashingAlgorithm hashingAlgorithm, Integer maxDigestBytes) {
         final long start = System.nanoTime();
         byte[] digest = getHashedKey(key, hashingAlgorithm, maxDigestBytes);
-        if(log.isDebugEnabled()) log.debug("Key : " + key +"; digest length : " + digest.length + "; byte Array contents : " + Arrays.toString(digest) + "; Took " + (System.nanoTime() - start) + " nanos");
+      if (log.isDebugEnabled()) {
+        log.debug("Key : " + key + "; digest length : " + digest.length + "; byte Array contents : " + Arrays.toString(digest) + "; Took " + System.nanoTime() - start + " nanos");
+      }
         return digest;
     }
 
@@ -139,7 +147,7 @@ And if CAS and client flags are present:
     }
 
     
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         
         BasicConfigurator.resetConfiguration();
         BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d{HH:mm:ss,SSS} [%t] %p %c %x - %m%n")));

@@ -30,10 +30,10 @@ public class ExecCmdOperationImpl extends OperationImpl implements ExecCmdOperat
 
     @Override
     public void handleLine(String line) {
-        if (line.equals("OK")) {
+        if ("OK".equals(line)) {
             callback.receivedStatus(OK);
             transitionState(OperationState.COMPLETE);
-        } else if (line.equals("ERROR")) {
+        } else if ("ERROR".equals(line)) {
             callback.receivedStatus(ERROR);
             transitionState(OperationState.COMPLETE);
         }

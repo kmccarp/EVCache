@@ -26,13 +26,13 @@ public class EVCacheEvent {
     private final EVCacheClientPool pool;
     private final long startTime;
 
-    private long endTime = 0;
+    private long endTime;
     private String status = EVCacheMetricsFactory.SUCCESS;
 
-    private Collection<EVCacheClient> clients = null;
-    private Collection<EVCacheKey> evcKeys = null;
-    private int ttl = 0;
-    private CachedData cachedData = null;
+    private Collection<EVCacheClient> clients;
+    private Collection<EVCacheKey> evcKeys;
+    private int ttl;
+    private CachedData cachedData;
 
     private Map<Object, Object> data;
 
@@ -94,12 +94,16 @@ public class EVCacheEvent {
     }
 
     public void setAttribute(Object key, Object value) {
-        if (data == null) data = new HashMap<Object, Object>();
+      if (data == null) {
+        data = new HashMap<>();
+      }
         data.put(key, value);
     }
 
     public Object getAttribute(Object key) {
-        if (data == null) return null;
+      if (data == null) {
+        return null;
+      }
         return data.get(key);
     }
 
@@ -123,7 +127,9 @@ public class EVCacheEvent {
      * Will return the duration of the call if available else -1
      */
     public long getDurationInMillis() {
-        if(endTime == 0) return -1;
+      if (endTime == 0) {
+        return -1;
+      }
         return endTime - startTime;
     }
 
@@ -137,9 +143,11 @@ public class EVCacheEvent {
      */
     @Deprecated
     public Collection<String> getKeys() {
-        if(evcKeys == null || evcKeys.size() == 0) return Collections.<String>emptyList();
+      if (evcKeys == null || evcKeys.isEmpty()) {
+        return Collections.<String>emptyList();
+      }
 
-        final Collection<String> keyList = new ArrayList<String>(evcKeys.size());
+        final Collection<String> keyList = new ArrayList<>(evcKeys.size());
         for(EVCacheKey key : evcKeys) {
             keyList.add(key.getKey());
         }
@@ -158,9 +166,11 @@ public class EVCacheEvent {
      */
     @Deprecated
     public Collection<String> getCanonicalKeys() {
-        if(evcKeys == null || evcKeys.size() == 0) return Collections.<String>emptyList();
+      if (evcKeys == null || evcKeys.isEmpty()) {
+        return Collections.<String>emptyList();
+      }
 
-        final Collection<String> keyList = new ArrayList<String>(evcKeys.size());
+        final Collection<String> keyList = new ArrayList<>(evcKeys.size());
         for(EVCacheKey key : evcKeys) {
             keyList.add(key.getCanonicalKey());
         }
@@ -168,7 +178,7 @@ public class EVCacheEvent {
     }
 
     public Collection<MemcachedNode> getMemcachedNode(EVCacheKey evckey) {
-        final Collection<MemcachedNode> nodeList = new ArrayList<MemcachedNode>(clients.size());
+        final Collection<MemcachedNode> nodeList = new ArrayList<>(clients.size());
         for(EVCacheClient client : clients) {
             String key = evckey.getDerivedKey(client.isDuetClient(), client.getHashingAlgorithm(), client.shouldEncodeHashKey(), client.getMaxDigestBytes(), client.getMaxHashLength(), client.getBaseEncoder());
             nodeList.add(client.getNodeLocator().getPrimary(key));
@@ -184,30 +194,40 @@ public class EVCacheEvent {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
         EVCacheEvent other = (EVCacheEvent) obj;
         if (appName == null) {
-            if (other.appName != null)
-                return false;
-        } else if (!appName.equals(other.appName))
+          if (other.appName != null) {
             return false;
+          }
+        } else if (!appName.equals(other.appName)) {
+          return false;
+        }
         if (cacheName == null) {
-            if (other.cacheName != null)
-                return false;
-        } else if (!cacheName.equals(other.cacheName))
+          if (other.cacheName != null) {
             return false;
-        if (call != other.call)
-            return false;
+          }
+        } else if (!cacheName.equals(other.cacheName)) {
+          return false;
+        }
+      if (call != other.call) {
+        return false;
+      }
         if (evcKeys == null) {
-            if (other.evcKeys != null)
-                return false;
-        } else if (!evcKeys.equals(other.evcKeys))
+          if (other.evcKeys != null) {
             return false;
+          }
+        } else if (!evcKeys.equals(other.evcKeys)) {
+          return false;
+        }
         return true;
     }
 
