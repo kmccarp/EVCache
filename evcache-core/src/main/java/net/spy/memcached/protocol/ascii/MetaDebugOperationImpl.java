@@ -27,20 +27,30 @@ public class MetaDebugOperationImpl extends EVCacheOperationImpl implements Meta
 
       @Override
       public void handleLine(String line) {
-          if(log.isDebugEnabled()) log.debug("meta debug of {} returned {}", key, line);
-          if (line.equals("EN")) {
+          if (log.isDebugEnabled()) {
+              log.debug("meta debug of {} returned {}", key, line);
+          }
+          if ("EN".equals(line)) {
               getCallback().receivedStatus(END);
               transitionState(OperationState.COMPLETE);
             } else {
               String[] parts = line.split(" ", 3);
-              if(log.isDebugEnabled()) log.debug("Num of parts "+ parts.length);
-              if(parts.length <= 2) return;
+              if (log.isDebugEnabled()) {
+                  log.debug("Num of parts " + parts.length);
+              }
+              if (parts.length <= 2) {
+                  return;
+              }
               
               String[] kvPairs = parts[2].split(" ");
               for(String kv : kvPairs) {
-                  if(log.isDebugEnabled()) log.debug("kv "+ kv);
+                  if (log.isDebugEnabled()) {
+                      log.debug("kv " + kv);
+                  }
                   String[] tuple = kv.split("=",2);
-                  if(log.isDebugEnabled()) log.debug("{} = {}", tuple[0], tuple[1]);
+                  if (log.isDebugEnabled()) {
+                      log.debug("{} = {}", tuple[0], tuple[1]);
+                  }
                   cb.debugInfo(tuple[0], tuple[1]);
               }
             }

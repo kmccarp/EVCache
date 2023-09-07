@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class ZoneFallbackIterator {
     private Entry<String> entry;
-    private int size = 0;
+    private int size;
 
     /**
      * Creates an instance of ZoneFallbackIterator given all the zones.
@@ -36,13 +36,17 @@ public class ZoneFallbackIterator {
      *            Set of all available zones.
      */
     public ZoneFallbackIterator(Set<String> allZones) {
-        if (allZones == null || allZones.size() == 0) return;
+        if (allZones == null || allZones.isEmpty()) {
+            return;
+        }
         Entry<String> pEntry = null;
         for (Iterator<String> itr = allZones.iterator(); itr.hasNext();) {
             size++;
             final String zone = itr.next();
-            final Entry<String> newEntry = new Entry<String>(zone, pEntry);
-            if (entry == null) entry = newEntry;
+            final Entry<String> newEntry = new Entry<>(zone, pEntry);
+            if (entry == null) {
+                entry = newEntry;
+            }
             pEntry = newEntry;
         }
 
@@ -61,7 +65,9 @@ public class ZoneFallbackIterator {
      *         returned.
      */
     public String next() {
-        if (entry == null) return null;
+        if (entry == null) {
+            return null;
+        }
         entry = entry.next;
         return entry.element;
     }
@@ -74,7 +80,9 @@ public class ZoneFallbackIterator {
      *         returned.
      */
     public String next(String ignoreZone) {
-        if (entry == null) return null;
+        if (entry == null) {
+            return null;
+        }
         entry = entry.next;
         if (entry.element.equals(ignoreZone)) {
             return entry.next.element;

@@ -78,7 +78,7 @@ public class BaseConnectionFactory extends BinaryConnectionFactory {
     }
 
     public BlockingQueue<Operation> createOperationQueue() {
-        return new ArrayBlockingQueue<Operation>(getOpQueueLen());
+        return new ArrayBlockingQueue<>(getOpQueueLen());
     }
 
     public MemcachedConnection createConnection(List<InetSocketAddress> addrs) throws IOException {

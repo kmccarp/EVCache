@@ -110,26 +110,32 @@ public class EVCacheItemMetaData {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         EVCacheItemMetaData other = (EVCacheItemMetaData) obj;
-        if (cas != other.cas)
+        if (cas != other.cas) {
             return false;
-        if (hasBeenFetchedAfterWrite != other.hasBeenFetchedAfterWrite)
+        }
+        if (hasBeenFetchedAfterWrite != other.hasBeenFetchedAfterWrite) {
             return false;
-        if (secondsLeftToExpire != other.secondsLeftToExpire)
+        }
+        if (secondsLeftToExpire != other.secondsLeftToExpire) {
             return false;
-        if (secondsSinceLastAccess != other.secondsSinceLastAccess)
+        }
+        if (secondsSinceLastAccess != other.secondsSinceLastAccess) {
             return false;
-        if (sizeInBytes != other.sizeInBytes)
+        }
+        if (sizeInBytes != other.sizeInBytes) {
             return false;
-        if (slabClass != other.slabClass)
-            return false;
-        return true;
+        }
+        return slabClass == other.slabClass;
     }
 
     @Override

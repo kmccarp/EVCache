@@ -23,8 +23,8 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
     private static final Logger log = LoggerFactory.getLogger(EVCacheConnectionObserver.class);
     private final EVCacheClient client;
     
-    private long lostCount = 0;
-    private long connectCount = 0;
+    private long lostCount;
+    private long connectCount;
     private final Set<SocketAddress> evCacheActiveSet;
     private final Set<SocketAddress> evCacheInActiveSet;
     private final Map<InetSocketAddress, Long> evCacheActiveStringSet;
@@ -33,10 +33,10 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
 
     public EVCacheConnectionObserver(EVCacheClient client) {
     	this.client = client;
-        this.evCacheActiveSet = Collections.newSetFromMap(new ConcurrentHashMap<SocketAddress, Boolean>());
-        this.evCacheInActiveSet = Collections.newSetFromMap(new ConcurrentHashMap<SocketAddress, Boolean>());
-        this.evCacheActiveStringSet = new ConcurrentHashMap<InetSocketAddress, Long>();
-        this.evCacheInActiveStringSet = new ConcurrentHashMap<InetSocketAddress, Long>();
+        this.evCacheActiveSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        this.evCacheInActiveSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        this.evCacheActiveStringSet = new ConcurrentHashMap<>();
+        this.evCacheInActiveStringSet = new ConcurrentHashMap<>();
 
 //        final ArrayList<Tag> tags = new ArrayList<Tag>(client.getTagList().size() + 3);
 //        tags.addAll(client.getTagList());
@@ -57,8 +57,12 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
         final InetSocketAddress inetAdd = (InetSocketAddress) sa;
         evCacheActiveStringSet.put(inetAdd, Long.valueOf(System.currentTimeMillis()));
         evCacheInActiveStringSet.remove(inetAdd);
-        if (log.isDebugEnabled()) log.debug(client.getAppName() + ":CONNECTION ESTABLISHED : To " + address + " was established after " + reconnectCount + " retries");
-        if(log.isTraceEnabled()) log.trace("Stack", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug(client.getAppName() + ":CONNECTION ESTABLISHED : To " + address + " was established after " + reconnectCount + " retries");
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Stack", new Exception());
+        }
 //        connectCounter.increment();
         connectCount++;
     }
@@ -70,8 +74,12 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
         final InetSocketAddress inetAdd = (InetSocketAddress) sa;
         evCacheInActiveStringSet.put(inetAdd, Long.valueOf(System.currentTimeMillis()));
         evCacheActiveStringSet.remove(inetAdd);
-        if (log.isDebugEnabled()) log.debug(client.getAppName() + ":CONNECTION LOST : To " + address);
-        if(log.isTraceEnabled()) log.trace("Stack", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug(client.getAppName() + ":CONNECTION LOST : To " + address);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("Stack", new Exception());
+        }
         lostCount++;
 //        connLostCounter.increment();
     }
@@ -114,15 +122,19 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
                     + ",SubGroup=pool,SubSubGroup=" + client.getServerGroupName()+ ",SubSubSubGroup=" + client.getId());
             final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             if (mbeanServer.isRegistered(mBeanName)) {
-                if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName
-                        + " has been registered. Will unregister the previous instance and register a new one.");
+                if (log.isDebugEnabled()) {
+                    log.debug("MBEAN with name " + mBeanName
+                            + " has been registered. Will unregister the previous instance and register a new one.");
+                }
                 mbeanServer.unregisterMBean(mBeanName);
             }
             if (!shutdown) {
                 mbeanServer.registerMBean(this, mBeanName);
             }
         } catch (Exception e) {
-            if (log.isWarnEnabled()) log.warn(e.getMessage(), e);
+            if (log.isWarnEnabled()) {
+                log.warn(e.getMessage(), e);
+            }
         }
     }
 
@@ -134,13 +146,17 @@ public class EVCacheConnectionObserver implements ConnectionObserver, EVCacheCon
                         + ",SubSubSubSubGroup=" + ((InetSocketAddress) sa).getHostName());
                 final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
                 if (mbeanServer.isRegistered(mBeanName)) {
-                    if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName
-                            + " has been registered. Will unregister the previous instance and register a new one.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("MBEAN with name " + mBeanName
+                                + " has been registered. Will unregister the previous instance and register a new one.");
+                    }
                     mbeanServer.unregisterMBean(mBeanName);
                 }
             }
         } catch (Exception e) {
-            if (log.isWarnEnabled()) log.warn(e.getMessage(), e);
+            if (log.isWarnEnabled()) {
+                log.warn(e.getMessage(), e);
+            }
         }
     }
 

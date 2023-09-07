@@ -51,12 +51,16 @@ public class EVCacheScheduledExecutor extends ScheduledThreadPoolExecutor implem
             ObjectName mBeanName = ObjectName.getInstance("com.netflix.evcache:Group=ThreadPool,SubGroup="+name);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             if (mbeanServer.isRegistered(mBeanName)) {
-                if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+                if (log.isDebugEnabled()) {
+                    log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+                }
                 mbeanServer.unregisterMBean(mBeanName);
             }
             mbeanServer.registerMBean(this, mBeanName);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) log.debug("Exception", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Exception", e);
+            }
         }
 
     }
@@ -67,7 +71,9 @@ public class EVCacheScheduledExecutor extends ScheduledThreadPoolExecutor implem
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             mbeanServer.unregisterMBean(mBeanName);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) log.debug("Exception", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Exception", e);
+            }
         }
         super.shutdown();
     }
