@@ -62,7 +62,9 @@ public class DIEVCacheKetamaNodeLocatorConfiguration extends EVCacheKetamaNodeLo
             }
             socketAddresses.put(node, result);
         }
-        if(log.isDebugEnabled()) log.debug("Returning : " + (result + "-" + repetition));
+        if (log.isDebugEnabled()) {
+            log.debug("Returning : " + (result + "-" + repetition));
+        }
         return result + "-" + repetition;
     }
 

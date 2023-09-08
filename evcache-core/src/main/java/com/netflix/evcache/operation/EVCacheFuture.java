@@ -38,7 +38,9 @@ public class EVCacheFuture implements Future<Boolean> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if(log.isDebugEnabled()) log.debug("Operation cancelled", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug("Operation cancelled", new Exception());
+        }
         return future.cancel(mayInterruptIfRunning);
     }
 

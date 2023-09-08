@@ -35,8 +35,8 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
 
     private String currentNodeList = "";
     private final int timeout;
-    private String region = null;
-    private String env = null;
+    private String region;
+    private String env;
 
     public SimpleNodeListProvider() {
         
@@ -48,9 +48,15 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
             env = sysEnv;
         } else {
             String propEnv = null;
-            if(propEnv == null) propEnv = System.getProperty("@environment");
-            if(propEnv == null) propEnv = System.getProperty("eureka.environment");
-            if(propEnv == null) propEnv = System.getProperty("netflix.environment");
+            if (propEnv == null) {
+                propEnv = System.getProperty("@environment");
+            }
+            if (propEnv == null) {
+                propEnv = System.getProperty("eureka.environment");
+            }
+            if (propEnv == null) {
+                propEnv = System.getProperty("netflix.environment");
+            }
             env = propEnv;
         }
 
@@ -59,9 +65,15 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
             region = sysRegion;
         } else {
             String propRegion = null;
-            if(propRegion == null) propRegion = System.getProperty("@region");
-            if(propRegion == null) propRegion = System.getProperty("eureka.region");
-            if(propRegion == null) propRegion = System.getProperty("netflix.region");
+            if (propRegion == null) {
+                propRegion = System.getProperty("@region");
+            }
+            if (propRegion == null) {
+                propRegion = System.getProperty("eureka.region");
+            }
+            if (propRegion == null) {
+                propRegion = System.getProperty("netflix.region");
+            }
             region = propRegion;
         }
 
@@ -79,12 +91,18 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
     public Map<ServerGroup, EVCacheServerGroupConfig> discoverInstances(String appName) throws IOException {
         final String propertyName = appName + "-NODES";
         final String nodeListString = EVCacheConfig.getInstance().getPropertyRepository().get(propertyName, String.class).orElse("").get();
-        if (log.isDebugEnabled()) log.debug("List of Nodes = " + nodeListString);
-        if(nodeListString != null && nodeListString.length() > 0) return bootstrapFromSystemProperty(nodeListString);
+        if (log.isDebugEnabled()) {
+            log.debug("List of Nodes = " + nodeListString);
+        }
+        if (nodeListString != null && nodeListString.length() > 0) {
+            return bootstrapFromSystemProperty(nodeListString);
+        }
+
+        if (env != null && region != null) {
+            return bootstrapFromEureka(appName);
+        }
         
-        if(env != null && region != null) return bootstrapFromEureka(appName);
-        
-        return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+        return Collections. emptyMap();
     }
 
     /**
@@ -94,8 +112,10 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
      * @throws IOException
      */
     private Map<ServerGroup, EVCacheServerGroupConfig> bootstrapFromEureka(String appName) throws IOException {
-        
-        if(env == null || region == null) return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+
+        if (env == null || region == null) {
+            return Collections.emptyMap();
+        }
 
         final String url = "http://discoveryreadonly." + region + ".dyn" + env + ".netflix.net:7001/v2/apps/" + appName;
         final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -111,7 +131,7 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
             final int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (!(statusCode >= 200 && statusCode < 300)) {
                 log.error("Status Code : " + statusCode + " for url " + url);
-                return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+                return Collections. emptyMap();
             }
             
             final InputStreamReader in = new InputStreamReader(httpResponse.getEntity().getContent(), Charset.defaultCharset());
@@ -119,7 +139,7 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
             final JSONObject jsonObj = new JSONObject(js);
             final JSONObject application = jsonObj.getJSONObject("application");
             final JSONArray instances = application.getJSONArray("instance");
-            final Map<ServerGroup, EVCacheServerGroupConfig> serverGroupMap = new HashMap<ServerGroup, EVCacheServerGroupConfig>();
+            final Map<ServerGroup, EVCacheServerGroupConfig> serverGroupMap = new HashMap<>();
             final int securePort = Integer.parseInt(props.get("evcache.secure.port", String.class)
                     .orElse(EVCacheClientPool.DEFAULT_SECURE_PORT).get());
 
@@ -135,7 +155,9 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
                         .orElse(false).get();
 
                 if (!asgEnabled.get()) {
-                    if(log.isDebugEnabled()) log.debug("ASG " + asgName + " is disabled so ignoring it");
+                    if (log.isDebugEnabled()) {
+                        log.debug("ASG " + asgName + " is disabled so ignoring it");
+                    }
                     continue;
                 }
                 
@@ -163,10 +185,14 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
                 final InetSocketAddress address = new InetSocketAddress(inetAddress, port);
                 config.getInetSocketAddress().add(address);
             }
-            if (log.isDebugEnabled()) log.debug("Returning : " + serverGroupMap);
+            if (log.isDebugEnabled()) {
+                log.debug("Returning : " + serverGroupMap);
+            }
             return serverGroupMap;
         } catch (Exception e) {
-            if (log.isDebugEnabled()) log.debug("URL : " + url + "; Timeout " + timeout, e);
+            if (log.isDebugEnabled()) {
+                log.debug("URL : " + url + "; Timeout " + timeout, e);
+            }
         } finally {
             if (httpResponse != null) {
                 try {
@@ -175,17 +201,19 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
 
                 }
             }
-            final List<Tag> tagList = new ArrayList<Tag>(2);
+            final List<Tag> tagList = new ArrayList<>(2);
             EVCacheMetricsFactory.getInstance().addAppNameTags(tagList, appName);
-            if (log.isDebugEnabled()) log.debug("Total Time to execute " + url + " " + (System.currentTimeMillis() - start) + " msec.");
+            if (log.isDebugEnabled()) {
+                log.debug("Total Time to execute " + url + " " + (System.currentTimeMillis() - start) + " msec.");
+            }
             EVCacheMetricsFactory.getInstance().getPercentileTimer(EVCacheMetricsFactory.INTERNAL_BOOTSTRAP_EUREKA, tagList, Duration.ofMillis(100)).record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
         }
-        return Collections.<ServerGroup, EVCacheServerGroupConfig> emptyMap();
+        return Collections. emptyMap();
     }
     
     
     private Map<ServerGroup, EVCacheServerGroupConfig> bootstrapFromSystemProperty(String nodeListString ) throws IOException {
-        final Map<ServerGroup, EVCacheServerGroupConfig> instancesSpecific = new HashMap<ServerGroup,EVCacheServerGroupConfig>();
+        final Map<ServerGroup, EVCacheServerGroupConfig> instancesSpecific = new HashMap<>();
         final StringTokenizer setTokenizer = new StringTokenizer(nodeListString, ";");
         while (setTokenizer.hasMoreTokens()) {
             final String token = setTokenizer.nextToken();
@@ -194,7 +222,7 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
                 final String replicaSetToken = replicaSetTokenizer.nextToken();
                 final String instanceToken = replicaSetTokenizer.nextToken();
                 final StringTokenizer instanceTokenizer = new StringTokenizer(instanceToken, ",");
-                final Set<InetSocketAddress> instanceList = new HashSet<InetSocketAddress>();
+                final Set<InetSocketAddress> instanceList = new HashSet<>();
                 final ServerGroup rSet = new ServerGroup(replicaSetToken, replicaSetToken);
                 final EVCacheServerGroupConfig config = new EVCacheServerGroupConfig(rSet, instanceList);
                 instancesSpecific.put(rSet, config);
@@ -219,7 +247,9 @@ public class SimpleNodeListProvider implements EVCacheNodeList {
         }
 
         currentNodeList = nodeListString;
-        if(log.isDebugEnabled()) log.debug("List by Servergroup" + instancesSpecific);
+        if (log.isDebugEnabled()) {
+            log.debug("List by Servergroup" + instancesSpecific);
+        }
         return instancesSpecific;
     }
 

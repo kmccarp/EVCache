@@ -4,7 +4,7 @@ package com.netflix.evcache.operation;
 public class EVCacheItem<T> {
     private final EVCacheItemMetaData item;
     private T data = null;
-    private int flag = 0;
+    private int flag;
 
     public EVCacheItem() {
         item = new EVCacheItemMetaData();

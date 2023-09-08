@@ -156,7 +156,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
         if (!status) {
             status = handleGCPauseForGet(duration, units, throwException, hasZF);
         }
-        if (status)  MemcachedConnection.opSucceeded(op);// continuous timeout counter will be reset
+        if (status) {
+            MemcachedConnection.opSucceeded(op);
+        }// continuous timeout counter will be reset
         return objRef.get();
     }
 
@@ -194,7 +196,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
         // redo the same op once more since there was a chance of gc pause
         status = latch.await(duration, units);
 
-        if (log.isDebugEnabled()) log.debug("re-await status : " + status);
+        if (log.isDebugEnabled()) {
+            log.debug("re-await status : " + status);
+        }
         String statusString = EVCacheMetricsFactory.SUCCESS;
         final long pauseDuration = System.currentTimeMillis() - start;
         if (op != null && !status) {
@@ -208,10 +212,12 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
                 else if (op.hasErrored() ) { t = new ExecutionException(op.getException());statusString = EVCacheMetricsFactory.ERROR; }
             }
 
-            if(t != null) throw t; //finally throw the exception if needed
+            if (t != null) {
+                throw t;
+            } //finally throw the exception if needed
         }
 
-        final List<Tag> tagList = new ArrayList<Tag>(client.getTagList().size() + 4);
+        final List<Tag> tagList = new ArrayList<>(client.getTagList().size() + 4);
         tagList.addAll(client.getTagList());
         tagList.add(new BasicTag(EVCacheMetricsFactory.CALL_TAG, EVCacheMetricsFactory.GET_OPERATION));
         tagList.add(new BasicTag(EVCacheMetricsFactory.PAUSE_REASON, gcPause ? EVCacheMetricsFactory.GC:EVCacheMetricsFactory.SCHEDULE));
@@ -248,7 +254,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
     }
 
     private static int getTimeoutSlots(int timeout) {
-        if(log.isDebugEnabled()) log.debug("Timeout is {}", timeout);
+        if (log.isDebugEnabled()) {
+            log.debug("Timeout is {}", timeout);
+        }
         int timeoutSlots;
         int val = timeout /10;
         if (val == 0 ) {
@@ -258,7 +266,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
         } else {
             timeoutSlots = 5;
         }
-        if(log.isDebugEnabled()) log.debug("timeoutSlots is {}", timeoutSlots);
+        if (log.isDebugEnabled()) {
+            log.debug("timeoutSlots is {}", timeoutSlots);
+        }
         return timeoutSlots;
     }
 
@@ -277,7 +287,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
                 scheduledTimeout =
                         LazySharedExecutor.executor.schedule(
                                 () -> {
-                                    if(log.isDebugEnabled()) log.debug("Completing now for loop {} and timeout slot {}", j, timeoutSlots);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("Completing now for loop {} and timeout slot {}", j, timeoutSlots);
+                                    }
                                     next.complete(null);
                                 },
                                 splitTimeout,
@@ -290,10 +302,12 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
                                     if (future.isDone()) {
                                         return;
                                     }
-                                    if(log.isDebugEnabled()) log.warn("Throwing timeout exception after {} {} with timeout slot {}",
-                                            timeout,
-                                            unit,
-                                            timeoutSlots);
+                                    if (log.isDebugEnabled()) {
+                                        log.warn("Throwing timeout exception after {} {} with timeout slot {}",
+                                                timeout,
+                                                unit,
+                                                timeoutSlots);
+                                    }
                                     future.completeExceptionally(new TimeoutException("Timeout after " + timeout));
                                 },
                                 splitTimeout,
@@ -305,7 +319,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
                     (r, exp) -> {
                         if (exp == null) {
                             scheduledTimeout.cancel(false);
-                            if(log.isDebugEnabled()) log.debug("completing the future");
+                            if (log.isDebugEnabled()) {
+                                log.debug("completing the future");
+                            }
                             next.complete(null);
                         }
                     });
@@ -319,19 +335,27 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
     }
 
     private void handleException() {
-        if (log.isDebugEnabled()) log.debug("handling the timeout in handleTimeoutException");
+        if (log.isDebugEnabled()) {
+            log.debug("handling the timeout in handleTimeoutException");
+        }
         if (op != null) {
             MemcachedConnection.opTimedOut(op);
             op.timeOut();
             ExecutionException t = null;
             if (op.isTimedOut()) {
-                if (log.isDebugEnabled()) log.debug("Checked Operation timed out with operation {}.", op);
+                if (log.isDebugEnabled()) {
+                    log.debug("Checked Operation timed out with operation {}.", op);
+                }
                 t = new ExecutionException(new CheckedOperationTimeoutException("Checked Operation timed out.", op));
             } else if (op.isCancelled()) {
-                if (log.isDebugEnabled()) log.debug("Cancelled with operation {}.", op);
+                if (log.isDebugEnabled()) {
+                    log.debug("Cancelled with operation {}.", op);
+                }
                 t = new ExecutionException(new CancellationException("Cancelled"));
             } else if (op.hasErrored()) {
-                if (log.isDebugEnabled()) log.debug("Other exception with operation {}.", op);
+                if (log.isDebugEnabled()) {
+                    log.debug("Other exception with operation {}.", op);
+                }
                 t = new ExecutionException(op.getException());
             }
             throw new RuntimeException(t);
@@ -365,7 +389,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
         return observe().timeout(duration, units, Single.create(subscriber -> {
             // whenever timeout occurs, continuous timeout counter will increase by 1.
             MemcachedConnection.opTimedOut(op);
-            if (op != null) op.timeOut();
+            if (op != null) {
+                op.timeOut();
+            }
             //if (!hasZF) EVCacheMetricsFactory.getCounter(appName, null, serverGroup.getName(), appName + "-get-CheckedOperationTimeout", DataSourceType.COUNTER).increment();
             if (throwException) {
                 subscriber.onError(new CheckedOperationTimeoutException("Timed out waiting for operation", op));
@@ -396,7 +422,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
      * @return true if the operation has not yet been written to the network
      */
     public boolean cancel(boolean ign) {
-        if(log.isDebugEnabled()) log.debug("Operation cancelled", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug("Operation cancelled", new Exception());
+        }
       return super.cancel(ign);
     }
 
@@ -406,7 +434,9 @@ public class EVCacheOperationFuture<T> extends OperationFuture<T> {
      * @return true if the operation has not yet been written to the network
      */
     public boolean cancel() {
-        if(log.isDebugEnabled()) log.debug("Operation cancelled", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug("Operation cancelled", new Exception());
+        }
         return super.cancel();
     }
 

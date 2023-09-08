@@ -64,7 +64,9 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
     public Map<String, T> getSome(long to, TimeUnit unit, boolean throwException, boolean hasZF)
             throws InterruptedException, ExecutionException {
         boolean status = latch.await(to, unit);
-        if(log.isDebugEnabled()) log.debug("Took " + (System.currentTimeMillis() - start)+ " to fetch " + rvMap.size() + " keys from " + client);
+        if (log.isDebugEnabled()) {
+            log.debug("Took " + (System.currentTimeMillis() - start) + " to fetch " + rvMap.size() + " keys from " + client);
+        }
         long pauseDuration = -1;
         List<Tag> tagList = null;
         Collection<Operation> timedoutOps = null;
@@ -73,7 +75,7 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
         try {
             if (!status) {
                 boolean gcPause = false;
-                tagList = new ArrayList<Tag>(7);
+                tagList = new ArrayList<>(7);
                 tagList.addAll(client.getTagList());
                     tagList.add(new BasicTag(EVCacheMetricsFactory.CALL_TAG, EVCacheMetricsFactory.BULK_OPERATION));
                 final RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
@@ -91,7 +93,9 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
                         final long gcStartTime = lastGcInfo.getStartTime() + vmStartTime;
                         if (gcStartTime > start) {
                             gcPause = true;
-                            if (log.isDebugEnabled()) log.debug("Total duration due to gc event = " + lastGcInfo.getDuration() + " msec.");
+                            if (log.isDebugEnabled()) {
+                                log.debug("Total duration due to gc event = " + lastGcInfo.getDuration() + " msec.");
+                            }
                             break;
                         }
                     }
@@ -100,7 +104,9 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
                 if (gcPause) {
                     status = latch.await(to, unit);
                     tagList.add(new BasicTag(EVCacheMetricsFactory.PAUSE_REASON, EVCacheMetricsFactory.GC));
-                    if (log.isDebugEnabled()) log.debug("Retry status : " + status);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Retry status : " + status);
+                    }
                     if (status) {
                         tagList.add(new BasicTag(EVCacheMetricsFactory.FETCH_AFTER_PAUSE, EVCacheMetricsFactory.YES));
                     } else {
@@ -110,14 +116,18 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
                     tagList.add(new BasicTag(EVCacheMetricsFactory.PAUSE_REASON, EVCacheMetricsFactory.SCHEDULE));
                 }
                 pauseDuration = System.currentTimeMillis() - start;
-                if (log.isDebugEnabled()) log.debug("Total duration due to gc event = " + (System.currentTimeMillis() - start) + " msec.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Total duration due to gc event = " + (System.currentTimeMillis() - start) + " msec.");
+                }
             }
 
             for (Operation op : ops) {
                 if (op.getState() != OperationState.COMPLETE) {
                     if (!status) {
                         MemcachedConnection.opTimedOut(op);
-                        if(timedoutOps == null) timedoutOps = new HashSet<Operation>();
+                        if (timedoutOps == null) {
+                            timedoutOps = new HashSet<>();
+                        }
                         timedoutOps.add(op);
                     } else {
                         MemcachedConnection.opSucceeded(op);
@@ -127,16 +137,24 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
                 }
             }
 
-            if (!status && !hasZF && (timedoutOps != null && timedoutOps.size() > 0)) statusString = EVCacheMetricsFactory.TIMEOUT;
+            if (!status && !hasZF && (timedoutOps != null && !timedoutOps.isEmpty())) {
+                statusString = EVCacheMetricsFactory.TIMEOUT;
+            }
 
             for (Operation op : ops) {
                 if(op.isCancelled()) {
-                    if (hasZF) statusString = EVCacheMetricsFactory.CANCELLED;
-                    if (throwException) throw new ExecutionException(new CancellationException("Cancelled"));
+                    if (hasZF) {
+                        statusString = EVCacheMetricsFactory.CANCELLED;
+                    }
+                    if (throwException) {
+                        throw new ExecutionException(new CancellationException("Cancelled"));
+                    }
                 }
-                if (op.hasErrored() && throwException) throw new ExecutionException(op.getException());
+                if (op.hasErrored() && throwException) {
+                    throw new ExecutionException(op.getException());
+                }
             }
-            Map<String, T> m = new HashMap<String, T>();
+            Map<String, T> m = new HashMap<>();
             for (Map.Entry<String, Future<T>> me : rvMap.entrySet()) {
                 m.put(me.getKey(), me.getValue().get());
             }
@@ -242,8 +260,12 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
                 //if (!hasZF && timedoutOps.size() > 0) EVCacheMetricsFactory.getInstance().increment(client.getAppName() + "-getSome-CheckedOperationTimeout", client.getTagList());
 
                 for (Operation op : ops) {
-                    if (op.isCancelled() && throwException) throw new ExecutionException(new CancellationException("Cancelled"));
-                    if (op.hasErrored() && throwException) throw new ExecutionException(op.getException());
+                    if (op.isCancelled() && throwException) {
+                        throw new ExecutionException(new CancellationException("Cancelled"));
+                    }
+                    if (op.hasErrored() && throwException) {
+                        throw new ExecutionException(op.getException());
+                    }
                 }
                 Map<String, T> m = new HashMap<String, T>();
                 for (Map.Entry<String, Future<T>> me : rvMap.entrySet()) {
@@ -277,7 +299,9 @@ public class EVCacheBulkGetFuture<T> extends BulkGetFuture<T> {
     }
 
     public boolean cancel(boolean ign) {
-        if(log.isDebugEnabled()) log.debug("Operation cancelled", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug("Operation cancelled", new Exception());
+        }
       return super.cancel(ign);
     }
 

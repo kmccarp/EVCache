@@ -57,27 +57,33 @@ public class EVCacheValue implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         EVCacheValue other = (EVCacheValue) obj;
-        if (createTime != other.createTime)
+        if (createTime != other.createTime) {
             return false;
+        }
         if (key == null) {
-            if (other.key != null)
+            if (other.key != null) {
                 return false;
-        } else if (!key.equals(other.key))
+            }
+        } else if (!key.equals(other.key)) {
             return false;
-        if (flags != other.flags)
+        }
+        if (flags != other.flags) {
             return false;
-        if (ttl != other.ttl)
+        }
+        if (ttl != other.ttl) {
             return false;
-        if (!Arrays.equals(value, other.value))
-            return false;
-        return true;
+        }
+        return Arrays.equals(value, other.value);
     }
 
     @Override

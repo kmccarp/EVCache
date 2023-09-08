@@ -6,7 +6,9 @@ package com.netflix.evcache.util;
  */
 public class Sneaky {
     public static RuntimeException sneakyThrow(Throwable t) {
-        if ( t == null ) throw new NullPointerException("t");
+        if (t == null) {
+            throw new NullPointerException("t");
+        }
         Sneaky.<RuntimeException>sneakyThrow0(t);
         return null;
     }

@@ -43,13 +43,15 @@ public abstract class Base  {
     }
 
     private static final Logger log = LoggerFactory.getLogger(Base.class);
-    protected EVCache evCache = null;
-    protected EVCacheClientPoolManager manager = null;
-    protected Properties props = null;
+    protected EVCache evCache;
+    protected EVCacheClientPoolManager manager;
+    protected Properties props;
 
 
     protected Properties getProps() {
-        if(props != null) return props;
+        if (props != null) {
+            return props;
+        }
         props = new Properties();
         initProps();
         return props;
@@ -96,7 +98,9 @@ public abstract class Base  {
 
     protected EVCache.Builder getNewBuilder() {
         final EVCache.Builder evCacheBuilder = new EVCache.Builder();
-        if(log.isDebugEnabled()) log.debug("evCacheBuilder : " + evCacheBuilder);
+        if (log.isDebugEnabled()) {
+            log.debug("evCacheBuilder : " + evCacheBuilder);
+        }
         return evCacheBuilder;
     }
 
@@ -105,8 +109,12 @@ public abstract class Base  {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.append(key, val, 60 * 60);
         for (Future<Boolean> s : status) {
-            if (log.isDebugEnabled()) log.debug("APPEND : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if (s.get() == Boolean.FALSE) return false;
+            if (log.isDebugEnabled()) {
+                log.debug("APPEND : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+            }
+            if (s.get() == Boolean.FALSE) {
+                return false;
+            }
         }
         return true;
     }
@@ -119,9 +127,13 @@ public abstract class Base  {
         String val = "val_aa_" + i;
         String key = "key_" + i;
         EVCacheLatch latch = gCache.appendOrAdd(key, val, null, ttl, Policy.ALL_MINUS_1);
-        if(log.isDebugEnabled()) log.debug("AppendOrAdd : key : " + key + "; Latch = " + latch);
+        if (log.isDebugEnabled()) {
+            log.debug("AppendOrAdd : key : " + key + "; Latch = " + latch);
+        }
         boolean status = latch.await(2000, TimeUnit.MILLISECONDS);
-        if(log.isDebugEnabled()) log.debug("AppendOrAdd : key : " + key + "; success = " + status);
+        if (log.isDebugEnabled()) {
+            log.debug("AppendOrAdd : key : " + key + "; success = " + status);
+        }
         return true;
     }
 
@@ -130,7 +142,9 @@ public abstract class Base  {
         String val = "val_add_"+System.currentTimeMillis();
         String key = "key_" + i;
         boolean status = gCache.add(key, val, null, 60 * 60);
-        if(log.isDebugEnabled()) log.debug("ADD : key : " + key + "; success = " + status);
+        if (log.isDebugEnabled()) {
+            log.debug("ADD : key : " + key + "; success = " + status);
+        }
         return status;
     }
 
@@ -140,8 +154,12 @@ public abstract class Base  {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.set(key, val, 60 * 60);
         for(Future<Boolean> s : status) {
-            if(log.isDebugEnabled()) log.debug("SET : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if(s.get() == Boolean.FALSE) return false;
+            if (log.isDebugEnabled()) {
+                log.debug("SET : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+            }
+            if (s.get() == Boolean.FALSE) {
+                return false;
+            }
         }
         return true;
     }
@@ -155,7 +173,9 @@ public abstract class Base  {
         String key = "key_" + i;
         EVCacheLatch status = gCache.replace(key, val, null, ttl, Policy.ALL);
         boolean opStatus = status.await(1000, TimeUnit.MILLISECONDS);
-        if (log.isDebugEnabled()) log.debug("REPLACE : key : " + key + "; success = " + opStatus + "; EVCacheLatch = " + status);
+        if (log.isDebugEnabled()) {
+            log.debug("REPLACE : key : " + key + "; success = " + opStatus + "; EVCacheLatch = " + status);
+        }
         return status.getSuccessCount() > 0;
     }
 
@@ -165,8 +185,12 @@ public abstract class Base  {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.delete(key);
         for(Future<Boolean> s : status) {
-            if(log.isDebugEnabled()) log.debug("DELETE : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if(s.get() == Boolean.FALSE) return false;
+            if (log.isDebugEnabled()) {
+                log.debug("DELETE : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+            }
+            if (s.get() == Boolean.FALSE) {
+                return false;
+            }
         }
         return true;
     }
@@ -179,8 +203,12 @@ public abstract class Base  {
         String key = "key_" + i;
         Future<Boolean>[] status = gCache.touch(key, ttl);
         for (Future<Boolean> s : status) {
-            if (log.isDebugEnabled()) log.debug("TOUCH : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
-            if (s.get() == Boolean.FALSE) return false;
+            if (log.isDebugEnabled()) {
+                log.debug("TOUCH : key : " + key + "; success = " + s.get() + "; Future = " + s.toString());
+            }
+            if (s.get() == Boolean.FALSE) {
+                return false;
+            }
         }
         return true;
     }
@@ -196,7 +224,9 @@ public abstract class Base  {
             client.set(key, val, 60 * 60, latch);
         }
         boolean success = latch.await(1000, TimeUnit.MILLISECONDS);
-        if (log.isDebugEnabled()) log.debug("SET LATCH : key : " + key + "; Finished in " + (System.currentTimeMillis() - start) + " msec");
+        if (log.isDebugEnabled()) {
+            log.debug("SET LATCH : key : " + key + "; Finished in " + (System.currentTimeMillis() - start) + " msec");
+        }
         return success;
     }
 
@@ -209,14 +239,18 @@ public abstract class Base  {
             client.delete(key, latch);
         }
         latch.await(1000, TimeUnit.MILLISECONDS);
-        if (log.isDebugEnabled()) log.debug("DELETE LATCH : key : " + key + "; Finished in " + (System.currentTimeMillis() - start) + " msec" + "; Latch : " + latch);
+        if (log.isDebugEnabled()) {
+            log.debug("DELETE LATCH : key : " + key + "; Finished in " + (System.currentTimeMillis() - start) + " msec" + "; Latch : " + latch);
+        }
         return true;
     }
 
     public String get(int i, EVCache gCache) throws Exception {
         String key = "key_" + i;
-        String value = gCache.<String>get(key);
-        if(log.isDebugEnabled()) log.debug("get : key : " + key + " val = " + value);
+        String value = gCache.get(key);
+        if (log.isDebugEnabled()) {
+            log.debug("get : key : " + key + " val = " + value);
+        }
         return value;
     }
 
@@ -239,47 +273,61 @@ public abstract class Base  {
 
     public String getWithPolicy(int i, EVCache gCache, Policy policy) throws Exception {
         String key = "key_" + i;
-        String value = gCache.<String>get(key, null, policy);
-        if(log.isDebugEnabled()) log.debug("get with Policy : key : " + key + " val = " + value);
+        String value = gCache.get(key, null, policy);
+        if (log.isDebugEnabled()) {
+            log.debug("get with Policy : key : " + key + " val = " + value);
+        }
         return value;
     }
 
     public String getAndTouch(int i, EVCache gCache) throws Exception {
         String key = "key_" + i;
-        String value = gCache.<String>getAndTouch(key, 60 * 60);
-        if(log.isDebugEnabled()) log.debug("getAndTouch : key : " + key + " val = " + value);
+        String value = gCache.getAndTouch(key, 60 * 60);
+        if (log.isDebugEnabled()) {
+            log.debug("getAndTouch : key : " + key + " val = " + value);
+        }
         return value;
     }
 
-    public Map<String, String> getBulk(String keys[], EVCache gCache) throws Exception {
-        final Map<String, String> value = gCache.<String>getBulk(keys);
-        if(log.isDebugEnabled()) log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+    public Map<String, String> getBulk(String[] keys, EVCache gCache) throws Exception {
+        final Map<String, String> value = gCache.getBulk(keys);
+        if (log.isDebugEnabled()) {
+            log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+        }
         return value;
     }
 
-    public Map<String, String> getAsyncBulk(String keys[], EVCache gCache) throws Exception {
-        final CompletableFuture<Map<String, String>> value = gCache.<String>getAsyncBulk(keys);
-        if(log.isDebugEnabled()) log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+    public Map<String, String> getAsyncBulk(String[] keys, EVCache gCache) throws Exception {
+        final CompletableFuture<Map<String, String>> value = gCache.getAsyncBulk(keys);
+        if (log.isDebugEnabled()) {
+            log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+        }
         return value.get();
     }
 
-    public Map<String, String> getBulkAndTouch(String keys[], EVCache gCache, int ttl) throws Exception {
-        final Map<String, String> value = gCache.<String>getBulkAndTouch(Arrays.asList(keys), null, ttl);
-        if(log.isDebugEnabled()) log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+    public Map<String, String> getBulkAndTouch(String[] keys, EVCache gCache, int ttl) throws Exception {
+        final Map<String, String> value = gCache.getBulkAndTouch(Arrays.asList(keys), null, ttl);
+        if (log.isDebugEnabled()) {
+            log.debug("getBulk : keys : " + Arrays.toString(keys) + "; values = " + value);
+        }
         return value;
     }
 
     public String getObservable(int i, EVCache gCache, Scheduler scheduler) throws Exception {
         String key = "key_" + i;
         String value = gCache.<String>get(key, scheduler).toBlocking().value();
-        if(log.isDebugEnabled()) log.debug("get : key : " + key + " val = " + value);
+        if (log.isDebugEnabled()) {
+            log.debug("get : key : " + key + " val = " + value);
+        }
         return value;
     }
 
     public String getAndTouchObservable(int i, EVCache gCache, Scheduler scheduler) throws Exception {
         String key = "key_" + i;
         String value = gCache.<String>getAndTouch(key, 60 * 60, scheduler).toBlocking().value();
-        if(log.isDebugEnabled()) log.debug("getAndTouch : key : " + key + " val = " + value);
+        if (log.isDebugEnabled()) {
+            log.debug("getAndTouch : key : " + key + " val = " + value);
+        }
         return value;
     }
 
