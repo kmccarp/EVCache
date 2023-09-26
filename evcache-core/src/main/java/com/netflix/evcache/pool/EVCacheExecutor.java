@@ -26,7 +26,7 @@ public class EVCacheExecutor extends ThreadPoolExecutor implements EVCacheExecut
     private final String name;
     public EVCacheExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, RejectedExecutionHandler handler, String name) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit,
-                new LinkedBlockingQueue<Runnable>(), 
+                new LinkedBlockingQueue<>(), 
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat( "EVCacheExecutor-" + name + "-%d").build());
         this.name = name;
 
@@ -51,12 +51,16 @@ public class EVCacheExecutor extends ThreadPoolExecutor implements EVCacheExecut
             ObjectName mBeanName = ObjectName.getInstance("com.netflix.evcache:Group=ThreadPool,SubGroup="+name);
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             if (mbeanServer.isRegistered(mBeanName)) {
-                if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+                if (log.isDebugEnabled()) {
+                    log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+                }
                 mbeanServer.unregisterMBean(mBeanName);
             }
             mbeanServer.registerMBean(this, mBeanName);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) log.debug("Exception", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Exception", e);
+            }
         }
     }
 
@@ -66,7 +70,9 @@ public class EVCacheExecutor extends ThreadPoolExecutor implements EVCacheExecut
             MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
             mbeanServer.unregisterMBean(mBeanName);
         } catch (Exception e) {
-            if (log.isDebugEnabled()) log.debug("Exception", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Exception", e);
+            }
         }
         super.shutdown();
     }

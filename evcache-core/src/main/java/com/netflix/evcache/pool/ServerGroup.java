@@ -29,22 +29,30 @@ public class ServerGroup implements Comparable<ServerGroup> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (!(obj instanceof ServerGroup)) return false;
+        }
+        if (!(obj instanceof ServerGroup)) {
+            return false;
+        }
         ServerGroup other = (ServerGroup) obj;
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
+        }
         if (zone == null) {
-            if (other.zone != null)
+            if (other.zone != null) {
                 return false;
-        } else if (!zone.equals(other.zone))
+            }
+        } else if (!zone.equals(other.zone)) {
             return false;
+        }
         return true;
     }
 

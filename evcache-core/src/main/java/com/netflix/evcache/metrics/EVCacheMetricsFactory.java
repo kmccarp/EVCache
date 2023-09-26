@@ -31,11 +31,11 @@ import net.spy.memcached.ops.StatusCode;
         "PMB_POSSIBLE_MEMORY_BLOAT" }, justification = "Creates only when needed")
 public final class EVCacheMetricsFactory {
 
-    private final Map<String, Number> monitorMap = new ConcurrentHashMap<String, Number>();
-    private final Map<String, Counter> counterMap = new ConcurrentHashMap<String, Counter>();
-    private final Map<String, DistributionSummary> distributionSummaryMap = new ConcurrentHashMap<String, DistributionSummary>();
+    private final Map<String, Number> monitorMap = new ConcurrentHashMap<>();
+    private final Map<String, Counter> counterMap = new ConcurrentHashMap<>();
+    private final Map<String, DistributionSummary> distributionSummaryMap = new ConcurrentHashMap<>();
     private final Lock writeLock = (new ReentrantReadWriteLock()).writeLock();
-    private final Map<String, Timer> timerMap = new HashMap<String, Timer>();
+    private final Map<String, Timer> timerMap = new HashMap<>();
 
     private static final EVCacheMetricsFactory INSTANCE = new EVCacheMetricsFactory();
 
@@ -104,8 +104,12 @@ public final class EVCacheMetricsFactory {
             while(st.hasMoreTokens()) {
                 final String token = st.nextToken().trim();
                 String val = System.getProperty(token);
-                if(val == null) val = System.getenv(token);
-                if(val != null) tagList.add(new BasicTag(token, val));
+                if (val == null) {
+                    val = System.getenv(token);
+                }
+                if (val != null) {
+                    tagList.add(new BasicTag(token, val));
+                }
             }
         }        
     }
@@ -116,8 +120,10 @@ public final class EVCacheMetricsFactory {
     }
 
     public Id getId(String name, Collection<Tag> tags) {
-        final List<Tag> tagList = new ArrayList<Tag>();
-        if(tags != null) tagList.addAll(tags);
+        final List<Tag> tagList = new ArrayList<>();
+        if (tags != null) {
+            tagList.addAll(tags);
+        }
         addCommonTags(tagList);
         return getRegistry().createId(name, tagList);
     }
@@ -131,7 +137,7 @@ public final class EVCacheMetricsFactory {
                 if (counterMap.containsKey(name)) {
                     counter = counterMap.get(name);
                 } else {
-                    List<Tag> tagList = new ArrayList<Tag>(tags.size() + 1);
+                    List<Tag> tagList = new ArrayList<>(tags.size() + 1);
                     tagList.addAll(tags);
                     final Id id = getId(cName, tagList);
                     counter = getRegistry().counter(id);
@@ -167,13 +173,15 @@ public final class EVCacheMetricsFactory {
     public Timer getPercentileTimer(String metric, Collection<Tag> tags, Duration max) {
         final String name = tags != null ? metric + tags.toString() : metric;
         final Timer duration = timerMap.get(name);
-        if (duration != null) return duration;
+        if (duration != null) {
+            return duration;
+        }
 
         writeLock.lock();
         try {
-            if (timerMap.containsKey(name))
+            if (timerMap.containsKey(name)) {
                 return timerMap.get(name);
-            else {
+            } else {
                 Id id = getId(metric, tags);
                 final Timer _duration = PercentileTimer.builder(getRegistry()).withId(id).withRange(Duration.ofNanos(100000), max).build();
                 timerMap.put(name, _duration);
@@ -187,7 +195,9 @@ public final class EVCacheMetricsFactory {
     public DistributionSummary getDistributionSummary(String name, Collection<Tag> tags) {
         final String metricName = (tags != null ) ? name + tags.toString() : name;
         final DistributionSummary _ds = distributionSummaryMap.get(metricName);
-        if(_ds != null) return _ds;
+        if (_ds != null) {
+            return _ds;
+        }
         final Registry registry = Spectator.globalRegistry(); 
         if (registry != null) {
             Id id = getId(name, tags);

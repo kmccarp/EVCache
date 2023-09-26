@@ -19,7 +19,7 @@ import com.netflix.archaius.config.SystemConfig;
 import com.netflix.evcache.config.EVCachePersistedProperties;
 public class EVCacheConfig {
 
-    private static EVCacheConfig INSTANCE;
+    private static EVCacheConfig instance;
 
     /**
      * This is an hack, should find a better way to do this 
@@ -51,7 +51,7 @@ public class EVCacheConfig {
 	    propertyRepository =  new EVCachePropertyRepository(_propertyRepository);
 	    //propertyRepository = _propertyRepository;
 
-        INSTANCE = this;
+        instance = this;
     }
 
     private EVCacheConfig() {
@@ -60,8 +60,10 @@ public class EVCacheConfig {
 
 
     public static EVCacheConfig getInstance() {
-        if(INSTANCE == null) new EVCacheConfig();
-        return INSTANCE;
+        if (instance == null) {
+            new EVCacheConfig();
+        }
+        return instance;
     }
 
     public PropertyRepository getPropertyRepository() {
@@ -82,12 +84,12 @@ public class EVCacheConfig {
 
         @Override
         public <T> Property<T> get(String key, Class<T> type) {
-            return new EVCacheProperty<T>(delegate.get(key, type));
+            return new EVCacheProperty<>(delegate.get(key, type));
         }
 
         @Override
         public <T> Property<T> get(String key, Type type) {
-            return new EVCacheProperty<T>(delegate.get(key, type));
+            return new EVCacheProperty<>(delegate.get(key, type));
         }
     }
 
@@ -135,13 +137,13 @@ public class EVCacheConfig {
         @Override
         public Property<T> orElse(T defaultValue) {
             // TODO Auto-generated method stub
-            return new EVCacheProperty<T>(property.orElse(defaultValue));
+            return new EVCacheProperty<>(property.orElse(defaultValue));
         }
 
         @Override
         public Property<T> orElseGet(String key) {
             // TODO Auto-generated method stub
-            return new EVCacheProperty<T>(property.orElseGet(key));
+            return new EVCacheProperty<>(property.orElseGet(key));
         }
 
         @Override

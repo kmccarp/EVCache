@@ -31,13 +31,15 @@ class EVCacheInternalImpl extends EVCacheImpl implements EVCacheInternal {
     public Map<MemcachedNode, CachedValues> metaGetPerClient(String key, Transcoder<CachedData> tc, boolean isOriginalKeyHashed) throws EVCacheException {
         Map<MemcachedNode, CachedValues> map = new HashMap<>();
         final Map<ServerGroup, List<EVCacheClient>> instancesByZone = _pool.getAllInstancesByZone();
-        final Map<ServerGroup, EVCacheClient> instancesWithNull = new HashMap<ServerGroup, EVCacheClient>();
+        final Map<ServerGroup, EVCacheClient> instancesWithNull = new HashMap<>();
         final EVCacheKey evcKey = getEVCacheKey(key);
         for (ServerGroup sGroup : instancesByZone.keySet()) {
             try {
                 for (EVCacheClient client : instancesByZone.get(sGroup)) {
                     EVCacheItem<CachedData> item = getEVCacheItem(client, evcKey, tc, true, false, isOriginalKeyHashed, false);
-                    if (log.isDebugEnabled()) log.debug("client : " + client + "; item : " + item);
+                    if (log.isDebugEnabled()) {
+                        log.debug("client : " + client + "; item : " + item);
+                    }
                     if(item == null) {
                         instancesWithNull.put(sGroup, client);
                     } else {
@@ -48,19 +50,29 @@ class EVCacheInternalImpl extends EVCacheImpl implements EVCacheInternal {
                 log.error("Error getting meta data", e);
             }
         }
-        if (log.isDebugEnabled()) log.debug("map : " + map);
-        if (log.isDebugEnabled()) log.debug("instancesWithNull : " + instancesWithNull);
+        if (log.isDebugEnabled()) {
+            log.debug("map : " + map);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("instancesWithNull : " + instancesWithNull);
+        }
         if(instancesWithNull.size() > 0 && map.size() > 0) {
             final EVCacheTranscoder transcoder = new EVCacheTranscoder();
             String originalKey = null;
             for(CachedValues vals : map.values()) {
-                if (log.isDebugEnabled()) log.debug("vals : " + vals);
+                if (log.isDebugEnabled()) {
+                    log.debug("vals : " + vals);
+                }
                 try {
                     Object obj = transcoder.decode(vals.getData());
-                    if (log.isDebugEnabled()) log.debug("Obj : " + obj);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Obj : " + obj);
+                    }
                     if(obj instanceof EVCacheValue) {
                         originalKey = ((EVCacheValue)obj).getKey();
-                        if (log.isDebugEnabled()) log.debug("original key: " + originalKey);
+                        if (log.isDebugEnabled()) {
+                            log.debug("original key: " + originalKey);
+                        }
                         break;
                     }
                 } catch(Exception e) {
@@ -69,13 +81,19 @@ class EVCacheInternalImpl extends EVCacheImpl implements EVCacheInternal {
             }
             if(originalKey != null) {
                 for(ServerGroup sGroup : instancesWithNull.keySet()) {
-                    if (log.isDebugEnabled()) log.debug("sGroup : " + sGroup);
+                    if (log.isDebugEnabled()) {
+                        log.debug("sGroup : " + sGroup);
+                    }
                     final EVCacheClient client = instancesWithNull.get(sGroup);
-                    if (log.isDebugEnabled()) log.debug("Client : " + client);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Client : " + client);
+                    }
                     EVCacheItem<CachedData> item;
                     try {
                         item = getEVCacheItem(client, getEVCacheKey(originalKey), tc, true, false, false, false);
-                        if (log.isDebugEnabled()) log.debug("item : " + item);
+                        if (log.isDebugEnabled()) {
+                            log.debug("item : " + item);
+                        }
                         map.put(client.getNodeLocator().getPrimary(originalKey), null == item ? null : new CachedValues(key, item.getData(), item.getItemMetaData()));
                     } catch (Exception e) {
                         log.error("Exception getting meta data using original key - " + originalKey, e);
@@ -94,7 +112,9 @@ class EVCacheInternalImpl extends EVCacheImpl implements EVCacheInternal {
             }
         }
 
-        if (log.isDebugEnabled()) log.debug("return map : " + map);
+        if (log.isDebugEnabled()) {
+            log.debug("return map : " + map);
+        }
         return map;
     }
 
@@ -131,10 +151,11 @@ class EVCacheInternalImpl extends EVCacheImpl implements EVCacheInternal {
 
     public EVCacheLatch addOrSetToWriteOnly(boolean replaceItem, String key, CachedData value, int timeToLive, EVCacheLatch.Policy policy) throws EVCacheException {
         EVCacheClient[] clients = _pool.getWriteOnlyEVCacheClients();
-        if (replaceItem)
+        if (replaceItem) {
             return set(key, value, null, timeToLive, policy, clients, 0);
-        else
+        } else {
             return add(key, value, null, timeToLive, policy, clients, 0, false);
+        }
     }
 
     public EVCacheLatch addOrSet(boolean replaceItem, String key, CachedData value, int timeToLive, EVCacheLatch.Policy policy, List<String> serverGroups) throws EVCacheException {

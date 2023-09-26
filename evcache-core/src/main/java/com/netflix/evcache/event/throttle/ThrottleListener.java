@@ -37,17 +37,19 @@ import com.netflix.evcache.util.EVCacheConfig;
 public class ThrottleListener implements EVCacheEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(ThrottleListener.class);
-    private final Map<String, Property<Set<String>>> _ignoreOperationsMap;
+    private final Map<String, Property<Set<String>>> ignoreOperationsMap;
     private final Property<Boolean> enableThrottleOperations;
     private final EVCacheClientPoolManager poolManager;
 
     @Inject
     public ThrottleListener(EVCacheClientPoolManager poolManager) {
         this.poolManager = poolManager;
-        this._ignoreOperationsMap = new ConcurrentHashMap<String, Property<Set<String>>>();
+        this.ignoreOperationsMap = new ConcurrentHashMap<>();
         enableThrottleOperations = EVCacheConfig.getInstance().getPropertyRepository().get("EVCacheThrottler.throttle.operations", Boolean.class).orElse(false);
         enableThrottleOperations.subscribe(i -> setupListener());
-        if(enableThrottleOperations.get()) setupListener();
+        if (enableThrottleOperations.get()) {
+            setupListener();
+        }
     }
 
     private void setupListener() {
@@ -63,12 +65,16 @@ public class ThrottleListener implements EVCacheEventListener {
 
     @Override
     public boolean onThrottle(final EVCacheEvent e) {
-        if(!enableThrottleOperations.get()) return false;
+        if (!enableThrottleOperations.get()) {
+            return false;
+        }
 
         final String appName = e.getAppName();
-        Property<Set<String>> throttleCalls = _ignoreOperationsMap.get(appName).orElse(Collections.emptySet());
-        if(throttleCalls.get().size() > 0 && throttleCalls.get().contains(e.getCall().name())) {
-            if(log.isDebugEnabled()) log.debug("Call : " + e.getCall() + " is throttled");
+        Property<Set<String>> throttleCalls = ignoreOperationsMap.get(appName).orElse(Collections.emptySet());
+        if(!throttleCalls.get().isEmpty() && throttleCalls.get().contains(e.getCall().name())) {
+            if (log.isDebugEnabled()) {
+                log.debug("Call : " + e.getCall() + " is throttled");
+            }
             return true;
         }
         return false;

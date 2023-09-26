@@ -12,7 +12,7 @@ import java.util.Iterator;
  */
 public class CircularIterator<T> {
     private Entry<T> entry;
-    private int size = 0;
+    private int size;
 
     /**
      * Creates an instance of ReplicaSetCircularIterator across all ReplicaSets.
@@ -21,13 +21,17 @@ public class CircularIterator<T> {
      *            Set of all available ReplicaSets.
      */
     public CircularIterator(Collection<T> allReplicaSets) {
-        if (allReplicaSets == null || allReplicaSets.isEmpty()) return;
+        if (allReplicaSets == null || allReplicaSets.isEmpty()) {
+            return;
+        }
         Entry<T> pEntry = null;
         for (Iterator<T> itr = allReplicaSets.iterator(); itr.hasNext();) {
             size++;
             final T rSet = itr.next();
-            final Entry<T> newEntry = new Entry<T>(rSet, pEntry);
-            if (entry == null) entry = newEntry;
+            final Entry<T> newEntry = new Entry<>(rSet, pEntry);
+            if (entry == null) {
+                entry = newEntry;
+            }
             pEntry = newEntry;
         }
 
@@ -46,7 +50,9 @@ public class CircularIterator<T> {
      *         are none then null is returned.
      */
     public T next() {
-        if (entry == null) return null;
+        if (entry == null) {
+            return null;
+        }
         entry = entry.next;
         return entry.element;
     }
@@ -59,7 +65,9 @@ public class CircularIterator<T> {
      *         null is returned.
      */
     public T next(T ignoreReplicaSet) {
-        if (entry == null) return null;
+        if (entry == null) {
+            return null;
+        }
         entry = entry.next;
         if (entry.element.equals(ignoreReplicaSet)) {
             return entry.next.element;
@@ -99,7 +107,9 @@ public class CircularIterator<T> {
             Entry<T> startEntry = entry;
             if(startEntry.element.getClass().isArray()) {
                 for(int i = 0; i < Array.getLength(startEntry.element); i++) {
-                    if(i > 0) current.append(",");
+                    if (i > 0) {
+                        current.append(",");
+                    }
                     current.append("[").append(i).append(", ").append(Array.get(startEntry.element, i).toString()).append("]");
                 }
             } else {
@@ -108,7 +118,9 @@ public class CircularIterator<T> {
             while (!entry.next.equals(startEntry)) {
                 if(entry.next.element.getClass().isArray()) {
                     for(int i = 0; i < Array.getLength(entry.next.element); i++) {
-                        if(i > 0) current.append(",");
+                        if (i > 0) {
+                            current.append(",");
+                        }
                         current.append("[").append(i).append(", ").append(Array.get(entry.next.element, i).toString()).append("]");
                     }
                 } else {

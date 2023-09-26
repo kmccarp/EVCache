@@ -35,7 +35,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
         this.key = key;
         this.latch = latch;
         this.completionCounter = new AtomicInteger(futures.length);
-        if (latch != null && latch instanceof EVCacheLatchImpl) ((EVCacheLatchImpl) latch).addFuture(this);
+        if (latch != null && latch instanceof EVCacheLatchImpl) {
+            ((EVCacheLatchImpl)latch).addFuture(this);
+        }
         for (int i = 0; i < futures.length; i++) {
             final OperationFuture<Boolean> of = futures[i];
             if (of.isDone()) {
@@ -50,7 +52,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if(log.isDebugEnabled()) log.debug("Operation cancelled", new Exception());
+        if (log.isDebugEnabled()) {
+            log.debug("Operation cancelled", new Exception());
+        }
         for (OperationFuture<Boolean> future : futures) {
             future.cancel();
         }
@@ -61,7 +65,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     public boolean isCancelled() {
 
         for (OperationFuture<Boolean> future : futures) {
-            if (future.isCancelled() == false) return false;
+            if (future.isCancelled() == false) {
+                return false;
+            }
         }
         return true;
     }
@@ -69,7 +75,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     @Override
     public boolean isDone() {
         for (OperationFuture<Boolean> future : futures) {
-            if (future.isDone() == false) return false;
+            if (future.isDone() == false) {
+                return false;
+            }
         }
         return true;
     }
@@ -77,7 +85,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     @Override
     public Boolean get() throws InterruptedException, ExecutionException {
         for (OperationFuture<Boolean> future : futures) {
-            if (future.get() == false) return false;
+            if (future.get() == false) {
+                return false;
+            }
         }
         return true;
     }
@@ -85,7 +95,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     @Override
     public Boolean get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         for (OperationFuture<Boolean> future : futures) {
-            if (future.get(timeout, unit) == false) return false;
+            if (future.get(timeout, unit) == false) {
+                return false;
+            }
         }
         return true;
 
@@ -121,7 +133,9 @@ public class EVCacheFutures implements ListenableFuture<Boolean, OperationComple
     public void onComplete(OperationFuture<?> future) throws Exception {
         int val = completionCounter.decrementAndGet();
         if (val == 0) {
-            if (latch != null) latch.onComplete(future);// Pass the last future to get completed
+            if (latch != null) {
+                latch.onComplete(future);
+            }// Pass the last future to get completed
         }
     }
 
