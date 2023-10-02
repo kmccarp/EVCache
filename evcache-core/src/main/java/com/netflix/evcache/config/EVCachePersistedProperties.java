@@ -19,7 +19,7 @@ import com.netflix.archaius.persisted2.ScopePredicates;
 import com.netflix.archaius.persisted2.loader.HTTPStreamLoader;
 
 public class EVCachePersistedProperties {
-    private static Logger log = LoggerFactory.getLogger(EVCachePersistedProperties.class);
+    private static final Logger log = LoggerFactory.getLogger(EVCachePersistedProperties.class);
 
     private static final String SCOPE_CLUSTER    = "cluster";
     private static final String SCOPE_AMI        = "ami";
@@ -71,8 +71,9 @@ public class EVCachePersistedProperties {
     private String getFilterString(Map<String, Set<String>> scopes) {
         StringBuilder sb = new StringBuilder();
         for (Entry<String, Set<String>> scope : scopes.entrySet()) {
-            if (scope.getValue().isEmpty()) 
+            if (scope.getValue().isEmpty()) {
                 continue;
+            }
             
             if (sb.length() > 0) {
                 sb.append(" and ");
@@ -109,11 +110,7 @@ public class EVCachePersistedProperties {
         try {
             Persisted2ClientConfig clientConfig = getConfig();
             log.info("Remote config : " + clientConfig);
-            String url = new StringBuilder()
-                .append(clientConfig.getServiceUrl())
-                .append("?skipPropsWithExtraScopes=").append(clientConfig.getSkipPropsWithExtraScopes())
-                .append("&filter=").append(URLEncoder.encode(getFilterString(clientConfig.getQueryScopes()), "UTF-8"))
-                .toString();
+            String url = clientConfig.getServiceUrl() + "?skipPropsWithExtraScopes=" + clientConfig.getSkipPropsWithExtraScopes() + "&filter=" + URLEncoder.encode(getFilterString(clientConfig.getQueryScopes()), "UTF-8");
 
             if (clientConfig.isEnabled()) {
                 JsonPersistedV2Reader reader = JsonPersistedV2Reader.builder(new HTTPStreamLoader(new URL(url)))

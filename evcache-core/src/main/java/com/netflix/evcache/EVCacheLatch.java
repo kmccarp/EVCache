@@ -45,7 +45,7 @@ public interface EVCacheLatch extends OperationCompletionListener {
      * @author smadappa
      *
      */
-    public static enum Policy {
+    public enum Policy {
         NONE, ONE, QUORUM, ALL_MINUS_1, ALL
     }
 

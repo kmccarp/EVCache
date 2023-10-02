@@ -98,12 +98,16 @@ public class EVCacheAsciiNodeImpl extends TCPMemcachedNodeImpl implements EVCach
           final ObjectName mBeanName = ObjectName.getInstance(getMonitorName(appName));
           final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
           if (mbeanServer.isRegistered(mBeanName)) {
-              if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+              if (log.isDebugEnabled()) {
+                  log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+              }
               mbeanServer.unregisterMBean(mBeanName);
           }
           mbeanServer.registerMBean(this, mBeanName);
       } catch (Exception e) {
-          if (log.isDebugEnabled()) log.debug("Exception while setting up the monitoring.", e);
+          if (log.isDebugEnabled()) {
+              log.debug("Exception while setting up the monitoring.", e);
+          }
       }
   }
 
@@ -153,11 +157,15 @@ public class EVCacheAsciiNodeImpl extends TCPMemcachedNodeImpl implements EVCach
           final ObjectName mBeanName = ObjectName.getInstance(getMonitorName(client.getAppName()));
           final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
           if (mbeanServer.isRegistered(mBeanName)) {
-              if (log.isDebugEnabled()) log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+              if (log.isDebugEnabled()) {
+                  log.debug("MBEAN with name " + mBeanName + " has been registered. Will unregister the previous instance and register a new one.");
+              }
               mbeanServer.unregisterMBean(mBeanName);
           }
       } catch (Exception e) {
-          if (log.isDebugEnabled()) log.debug("Exception while setting up the monitoring.", e);
+          if (log.isDebugEnabled()) {
+              log.debug("Exception while setting up the monitoring.", e);
+          }
       }
   }
 

@@ -15,7 +15,7 @@ public class EVCacheKetamaNodeLocatorConfiguration extends DefaultKetamaNodeLoca
 
     protected final EVCacheClient client;
     protected final Property<Integer> bucketSize;
-    protected final Map<MemcachedNode, String> socketAddresses = new HashMap<MemcachedNode, String>();
+    protected final Map<MemcachedNode, String> socketAddresses = new HashMap<>();
 
     public EVCacheKetamaNodeLocatorConfiguration(EVCacheClient client) {
         this.client = client;

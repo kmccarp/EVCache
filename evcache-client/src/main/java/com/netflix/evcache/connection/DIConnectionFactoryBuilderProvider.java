@@ -54,9 +54,11 @@ public class DIConnectionFactoryBuilderProvider extends ConnectionFactoryBuilder
     public ConnectionFactory getConnectionFactory(EVCacheClient client) {
         final String appName = client.getAppName();
 
-        if(useBinaryProtocol()) 
+        if (useBinaryProtocol()) {
             return new DIConnectionFactory(client, eurekaClient, getMaxQueueLength(appName), getOperationTimeout(appName), getOPQueueMaxBlockTime(appName));
-        	else return new DIAsciiConnectionFactory(client, eurekaClient, getMaxQueueLength(appName), getOperationTimeout(appName), getOPQueueMaxBlockTime(appName));
+        } else {
+            return new DIAsciiConnectionFactory(client, eurekaClient, getMaxQueueLength(appName), getOperationTimeout(appName), getOPQueueMaxBlockTime(appName));
+        }
     }
 
 }

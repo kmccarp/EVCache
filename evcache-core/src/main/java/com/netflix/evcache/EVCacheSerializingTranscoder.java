@@ -54,14 +54,14 @@ public class EVCacheSerializingTranscoder extends BaseSerializingTranscoder impl
 
     // Special flags for specially handled types.
     private static final int SPECIAL_MASK = 0xff00;
-    static final int SPECIAL_BOOLEAN = (1 << 8);
-    static final int SPECIAL_INT = (2 << 8);
-    static final int SPECIAL_LONG = (3 << 8);
-    static final int SPECIAL_DATE = (4 << 8);
-    static final int SPECIAL_BYTE = (5 << 8);
-    static final int SPECIAL_FLOAT = (6 << 8);
-    static final int SPECIAL_DOUBLE = (7 << 8);
-    static final int SPECIAL_BYTEARRAY = (8 << 8);
+    static final int SPECIAL_BOOLEAN = 1 << 8;
+    static final int SPECIAL_INT = 2 << 8;
+    static final int SPECIAL_LONG = 3 << 8;
+    static final int SPECIAL_DATE = 4 << 8;
+    static final int SPECIAL_BYTE = 5 << 8;
+    static final int SPECIAL_FLOAT = 6 << 8;
+    static final int SPECIAL_DOUBLE = 7 << 8;
+    static final int SPECIAL_BYTEARRAY = 8 << 8;
 
     static final String COMPRESSION = "COMPRESSION_METRIC";
 
@@ -122,10 +122,10 @@ public class EVCacheSerializingTranscoder extends BaseSerializingTranscoder impl
                     rv = Byte.valueOf(tu.decodeByte(data));
                     break;
                 case SPECIAL_FLOAT:
-                    rv = new Float(Float.intBitsToFloat(tu.decodeInt(data)));
+                    rv = Float.valueOf(Float.intBitsToFloat(tu.decodeInt(data)));
                     break;
                 case SPECIAL_DOUBLE:
-                    rv = new Double(Double.longBitsToDouble(tu.decodeLong(data)));
+                    rv = Double.valueOf(Double.longBitsToDouble(tu.decodeLong(data)));
                     break;
                 case SPECIAL_BYTEARRAY:
                     rv = data;
@@ -193,20 +193,18 @@ public class EVCacheSerializingTranscoder extends BaseSerializingTranscoder impl
                         o.getClass().getName(), b.length, compressed.length);
             }
 
-            long compression_ratio = Math.round((double) compressed.length / b.length * 100);
-            updateTimerWithCompressionRatio(compression_ratio);
+            long compressionRatio = Math.round((double) compressed.length / b.length * 100);
+            updateTimerWithCompressionRatio(compressionRatio);
         }
         return new CachedData(flags, b, getMaxSize());
     }
 
-    private void updateTimerWithCompressionRatio(long ratio_percentage) {
+    private void updateTimerWithCompressionRatio(long ratioPercentage) {
         if(timer == null) {
-            final List<Tag> tagList = new ArrayList<Tag>(1);
+            final List<Tag> tagList = new ArrayList<>(1);
             tagList.add(new BasicTag(EVCacheMetricsFactory.COMPRESSION_TYPE, "gzip"));
             timer = EVCacheMetricsFactory.getInstance().getPercentileTimer(EVCacheMetricsFactory.COMPRESSION_RATIO, tagList, Duration.ofMillis(100));
-        };
-
-        timer.record(ratio_percentage, TimeUnit.MILLISECONDS);
+        }timer.record(ratioPercentage, TimeUnit.MILLISECONDS);
     }
 
 }
